@@ -3,9 +3,8 @@ port module Harness exposing (main)
 {-| Wire3 round-trip test harness.
 
 Protocol (line-based over stdin/stdout via ports):
-  Request:  "<typeName> <hex-encoded-wire3-bytes>"
-  Response: "OK <hex-encoded-wire3-bytes>"
-       or:  "ERR <error-message>"
+  Decode+re-encode: "<typeName> <hex>"  →  "OK <hex>" | "ERR <msg>"
+  Elm encodes:      "ENCODE <typeName> <caseId>"  →  "OK <hex>" | "ERR <msg>"
 
 -}
 
@@ -48,6 +47,9 @@ update msg _ =
 processRequest : String -> String
 processRequest line =
     case String.words line of
+        "ENCODE" :: typeName :: caseId :: _ ->
+            handleEncode typeName caseId
+
         typeName :: hexStr :: _ ->
             let
                 bytes =
@@ -103,6 +105,212 @@ handleType typeName bytes =
 
         _ ->
             "ERR unknown-type:" ++ typeName
+
+
+-- ── ENCODE command: Elm creates values and encodes them ──────
+
+
+handleEncode : String -> String -> String
+handleEncode typeName caseId =
+    case typeName of
+        "Int" ->
+            encodeCase Wire3.encodeInt intFixtures caseId
+
+        "Float" ->
+            encodeCase (BE.float64 Bytes.LE) floatFixtures caseId
+
+        "Bool" ->
+            encodeCase Wire3.encodeBool boolFixtures caseId
+
+        "String" ->
+            encodeCase Wire3.encodeString stringFixtures caseId
+
+        "Color" ->
+            encodeCase w3_encode_Color colorFixtures caseId
+
+        "Shape" ->
+            encodeCase w3_encode_Shape shapeFixtures caseId
+
+        "Person" ->
+            encodeCase w3_encode_Person personFixtures caseId
+
+        "Inventory" ->
+            encodeCase w3_encode_Inventory inventoryFixtures caseId
+
+        "ApiResponse" ->
+            encodeCase w3_encode_ApiResponse apiResponseFixtures caseId
+
+        "Tree" ->
+            encodeCase w3_encode_Tree treeFixtures caseId
+
+        "Coordinate" ->
+            encodeCase w3_encode_Coordinate coordinateFixtures caseId
+
+        "Dashboard" ->
+            encodeCase w3_encode_Dashboard dashboardFixtures caseId
+
+        "Team" ->
+            encodeCase w3_encode_Team teamFixtures caseId
+
+        _ ->
+            "ERR unknown-encode-type:" ++ typeName
+
+
+encodeCase : (a -> BE.Encoder) -> List ( String, a ) -> String -> String
+encodeCase encoder fixtures caseId =
+    case List.filter (\( id, _ ) -> id == caseId) fixtures |> List.head of
+        Just ( _, value ) ->
+            "OK " ++ bytesToHex (BE.encode (encoder value))
+
+        Nothing ->
+            "ERR unknown-case:" ++ caseId
+
+
+-- ── Test fixtures (predefined values for each type) ──────────
+
+
+intFixtures : List ( String, Int )
+intFixtures =
+    [ ( "0", 0 )
+    , ( "1", 1 )
+    , ( "neg1", -1 )
+    , ( "42", 42 )
+    , ( "boundary1", 107 )
+    , ( "boundary2", 108 )
+    , ( "boundary3", 4715 )
+    , ( "boundary4", 4716 )
+    , ( "large", 8388608 )
+    , ( "max", 9007199254740991 )
+    , ( "min", -9007199254740991 )
+    , ( "neg_large", -2147483648 )
+    ]
+
+
+floatFixtures : List ( String, Float )
+floatFixtures =
+    [ ( "0", 0.0 )
+    , ( "1", 1.0 )
+    , ( "neg1", -1.0 )
+    , ( "pi", 3.14159265358979 )
+    , ( "tiny", 1.0e-10 )
+    , ( "big", 1.0e10 )
+    ]
+
+
+boolFixtures : List ( String, Bool )
+boolFixtures =
+    [ ( "true", True )
+    , ( "false", False )
+    ]
+
+
+stringFixtures : List ( String, String )
+stringFixtures =
+    [ ( "empty", "" )
+    , ( "hello", "hello" )
+    , ( "unicode", "héllo wörld" )
+    , ( "cjk", "日本語テスト" )
+    , ( "emoji", "🎉🚀🌍" )
+    , ( "newlines", "line1\nline2\ttab" )
+    ]
+
+
+colorFixtures : List ( String, Color )
+colorFixtures =
+    [ ( "red", Red )
+    , ( "green", Green )
+    , ( "blue", Blue )
+    ]
+
+
+shapeFixtures : List ( String, Shape )
+shapeFixtures =
+    [ ( "circle", Circle 5.0 )
+    , ( "point", Point )
+    , ( "rect", Rectangle 3.0 4.0 )
+    ]
+
+
+personFixtures : List ( String, Person )
+personFixtures =
+    [ ( "alice", { name = "Alice", age = 30, score = 95.5, active = True } )
+    , ( "empty", { name = "", age = 0, score = 0.0, active = False } )
+    , ( "unicode", { name = "José García 🏠", age = 99, score = -1.5, active = True } )
+    ]
+
+
+inventoryFixtures : List ( String, Inventory )
+inventoryFixtures =
+    [ ( "empty"
+      , { items = [], counts = Dict.empty, tags = Set.empty, selected = Nothing }
+      )
+    , ( "full"
+      , { items = [ "apple", "banana" ]
+        , counts = Dict.fromList [ ( "apple", 3 ), ( "banana", 5 ) ]
+        , tags = Set.fromList [ "fruit", "organic" ]
+        , selected = Just "apple"
+        }
+      )
+    ]
+
+
+apiResponseFixtures : List ( String, ApiResponse )
+apiResponseFixtures =
+    [ ( "ok", { result = Ok 42, message = "success" } )
+    , ( "err", { result = Err "not found", message = "failed" } )
+    ]
+
+
+treeFixtures : List ( String, Tree )
+treeFixtures =
+    [ ( "leaf", Leaf 42 )
+    , ( "branch", Branch (Leaf 1) (Leaf 2) )
+    , ( "nested", Branch (Branch (Leaf 10) (Leaf 20)) (Leaf 30) )
+    ]
+
+
+coordinateFixtures : List ( String, Coordinate )
+coordinateFixtures =
+    [ ( "origin", { point = ( 0.0, 0.0 ), label = "origin" } )
+    , ( "point", { point = ( 100.5, 200.3 ), label = "top-right" } )
+    ]
+
+
+dashboardFixtures : List ( String, Dashboard )
+dashboardFixtures =
+    [ ( "empty"
+      , { userScores = Dict.empty, optionalData = Nothing, nested = Ok Nothing }
+      )
+    , ( "full"
+      , { userScores = Dict.fromList [ ( "alice", [ 10, 20 ] ), ( "bob", [ 30 ] ) ]
+        , optionalData = Just [ "hello", "world" ]
+        , nested = Ok (Just 42)
+        }
+      )
+    , ( "error"
+      , { userScores = Dict.empty
+        , optionalData = Nothing
+        , nested = Err "something went wrong"
+        }
+      )
+    ]
+
+
+teamFixtures : List ( String, Team )
+teamFixtures =
+    [ ( "small"
+      , { leader = { name = "Alice", age = 30, score = 95.5, active = True }
+        , members = [ { name = "Bob", age = 25, score = 80.0, active = True } ]
+        , color = Blue
+        }
+      )
+    , ( "empty"
+      , { leader = { name = "Solo", age = 40, score = 100.0, active = True }
+        , members = []
+        , color = Red
+        }
+      )
+    ]
 
 
 roundTrip : BD.Decoder a -> (a -> BE.Encoder) -> Bytes -> String

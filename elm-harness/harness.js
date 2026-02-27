@@ -2995,23 +2995,219 @@ var $elm$json$Json$Decode$string = _Json_decodeString;
 var $author$project$Harness$requestPort = _Platform_incomingPort('requestPort', $elm$json$Json$Decode$string);
 var $elm$json$Json$Decode$succeed = _Json_succeed;
 var $elm$bytes$Bytes$LE = {$: 'LE'};
-var $elm$bytes$Bytes$Decode$Decoder = function (a) {
-	return {$: 'Decoder', a: a};
+var $author$project$Harness$apiResponseFixtures = _List_fromArray(
+	[
+		_Utils_Tuple2(
+		'ok',
+		{
+			message: 'success',
+			result: $elm$core$Result$Ok(42)
+		}),
+		_Utils_Tuple2(
+		'err',
+		{
+			message: 'failed',
+			result: $elm$core$Result$Err('not found')
+		})
+	]);
+var $author$project$Harness$boolFixtures = _List_fromArray(
+	[
+		_Utils_Tuple2('true', true),
+		_Utils_Tuple2('false', false)
+	]);
+var $author$project$TestTypes$Blue = {$: 'Blue'};
+var $author$project$TestTypes$Green = {$: 'Green'};
+var $author$project$TestTypes$Red = {$: 'Red'};
+var $author$project$Harness$colorFixtures = _List_fromArray(
+	[
+		_Utils_Tuple2('red', $author$project$TestTypes$Red),
+		_Utils_Tuple2('green', $author$project$TestTypes$Green),
+		_Utils_Tuple2('blue', $author$project$TestTypes$Blue)
+	]);
+var $author$project$Harness$coordinateFixtures = _List_fromArray(
+	[
+		_Utils_Tuple2(
+		'origin',
+		{
+			label: 'origin',
+			point: _Utils_Tuple2(0.0, 0.0)
+		}),
+		_Utils_Tuple2(
+		'point',
+		{
+			label: 'top-right',
+			point: _Utils_Tuple2(100.5, 200.3)
+		})
+	]);
+var $elm$core$Dict$RBEmpty_elm_builtin = {$: 'RBEmpty_elm_builtin'};
+var $elm$core$Dict$empty = $elm$core$Dict$RBEmpty_elm_builtin;
+var $elm$core$Dict$Black = {$: 'Black'};
+var $elm$core$Dict$RBNode_elm_builtin$ = function (a, b, c, d, e) {
+	return {$: 'RBNode_elm_builtin', a: a, b: b, c: c, d: d, e: e};
 };
-var $elm$bytes$Bytes$Decode$andThen$ = function (callback, _v0) {
-	var decodeA = _v0.a;
-	return $elm$bytes$Bytes$Decode$Decoder(
+var $elm$core$Dict$RBNode_elm_builtin = F5($elm$core$Dict$RBNode_elm_builtin$);
+var $elm$core$Dict$Red = {$: 'Red'};
+var $elm$core$Dict$balance$ = function (color, key, value, left, right) {
+	if ((right.$ === 'RBNode_elm_builtin') && (right.a.$ === 'Red')) {
+		var _v1 = right.a;
+		var rK = right.b;
+		var rV = right.c;
+		var rLeft = right.d;
+		var rRight = right.e;
+		if ((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Red')) {
+			var _v3 = left.a;
+			var lK = left.b;
+			var lV = left.c;
+			var lLeft = left.d;
+			var lRight = left.e;
+			return $elm$core$Dict$RBNode_elm_builtin$(
+				$elm$core$Dict$Red,
+				key,
+				value,
+				$elm$core$Dict$RBNode_elm_builtin$($elm$core$Dict$Black, lK, lV, lLeft, lRight),
+				$elm$core$Dict$RBNode_elm_builtin$($elm$core$Dict$Black, rK, rV, rLeft, rRight));
+		} else {
+			return $elm$core$Dict$RBNode_elm_builtin$(
+				color,
+				rK,
+				rV,
+				$elm$core$Dict$RBNode_elm_builtin$($elm$core$Dict$Red, key, value, left, rLeft),
+				rRight);
+		}
+	} else {
+		if ((((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Red')) && (left.d.$ === 'RBNode_elm_builtin')) && (left.d.a.$ === 'Red')) {
+			var _v5 = left.a;
+			var lK = left.b;
+			var lV = left.c;
+			var _v6 = left.d;
+			var _v7 = _v6.a;
+			var llK = _v6.b;
+			var llV = _v6.c;
+			var llLeft = _v6.d;
+			var llRight = _v6.e;
+			var lRight = left.e;
+			return $elm$core$Dict$RBNode_elm_builtin$(
+				$elm$core$Dict$Red,
+				lK,
+				lV,
+				$elm$core$Dict$RBNode_elm_builtin$($elm$core$Dict$Black, llK, llV, llLeft, llRight),
+				$elm$core$Dict$RBNode_elm_builtin$($elm$core$Dict$Black, key, value, lRight, right));
+		} else {
+			return $elm$core$Dict$RBNode_elm_builtin$(color, key, value, left, right);
+		}
+	}
+};
+var $elm$core$Dict$balance = F5($elm$core$Dict$balance$);
+var $elm$core$Basics$compare = _Utils_compare;
+var $elm$core$Dict$insertHelp$ = function (key, value, dict) {
+	if (dict.$ === 'RBEmpty_elm_builtin') {
+		return $elm$core$Dict$RBNode_elm_builtin$($elm$core$Dict$Red, key, value, $elm$core$Dict$RBEmpty_elm_builtin, $elm$core$Dict$RBEmpty_elm_builtin);
+	} else {
+		var nColor = dict.a;
+		var nKey = dict.b;
+		var nValue = dict.c;
+		var nLeft = dict.d;
+		var nRight = dict.e;
+		var _v1 = A2($elm$core$Basics$compare, key, nKey);
+		switch (_v1.$) {
+			case 'LT':
+				return $elm$core$Dict$balance$(
+					nColor,
+					nKey,
+					nValue,
+					$elm$core$Dict$insertHelp$(key, value, nLeft),
+					nRight);
+			case 'EQ':
+				return $elm$core$Dict$RBNode_elm_builtin$(nColor, nKey, value, nLeft, nRight);
+			default:
+				return $elm$core$Dict$balance$(
+					nColor,
+					nKey,
+					nValue,
+					nLeft,
+					$elm$core$Dict$insertHelp$(key, value, nRight));
+		}
+	}
+};
+var $elm$core$Dict$insertHelp = F3($elm$core$Dict$insertHelp$);
+var $elm$core$Dict$insert$ = function (key, value, dict) {
+	var _v0 = $elm$core$Dict$insertHelp$(key, value, dict);
+	if ((_v0.$ === 'RBNode_elm_builtin') && (_v0.a.$ === 'Red')) {
+		var _v1 = _v0.a;
+		var k = _v0.b;
+		var v = _v0.c;
+		var l = _v0.d;
+		var r = _v0.e;
+		return $elm$core$Dict$RBNode_elm_builtin$($elm$core$Dict$Black, k, v, l, r);
+	} else {
+		var x = _v0;
+		return x;
+	}
+};
+var $elm$core$Dict$insert = F3($elm$core$Dict$insert$);
+var $elm$core$Dict$fromList = function (assocs) {
+	return $elm$core$List$foldl$(
 		F2(
-			function (bites, offset) {
-				var _v1 = A2(decodeA, bites, offset);
-				var newOffset = _v1.a;
-				var a = _v1.b;
-				var _v2 = callback(a);
-				var decodeB = _v2.a;
-				return A2(decodeB, bites, newOffset);
-			}));
+			function (_v0, dict) {
+				var key = _v0.a;
+				var value = _v0.b;
+				return $elm$core$Dict$insert$(key, value, dict);
+			}),
+		$elm$core$Dict$empty,
+		assocs);
 };
-var $elm$bytes$Bytes$Decode$andThen = F2($elm$bytes$Bytes$Decode$andThen$);
+var $author$project$Harness$dashboardFixtures = _List_fromArray(
+	[
+		_Utils_Tuple2(
+		'empty',
+		{
+			nested: $elm$core$Result$Ok($elm$core$Maybe$Nothing),
+			optionalData: $elm$core$Maybe$Nothing,
+			userScores: $elm$core$Dict$empty
+		}),
+		_Utils_Tuple2(
+		'full',
+		{
+			nested: $elm$core$Result$Ok(
+				$elm$core$Maybe$Just(42)),
+			optionalData: $elm$core$Maybe$Just(
+				_List_fromArray(
+					['hello', 'world'])),
+			userScores: $elm$core$Dict$fromList(
+				_List_fromArray(
+					[
+						_Utils_Tuple2(
+						'alice',
+						_List_fromArray(
+							[10, 20])),
+						_Utils_Tuple2(
+						'bob',
+						_List_fromArray(
+							[30]))
+					]))
+		}),
+		_Utils_Tuple2(
+		'error',
+		{
+			nested: $elm$core$Result$Err('something went wrong'),
+			optionalData: $elm$core$Maybe$Nothing,
+			userScores: $elm$core$Dict$empty
+		})
+	]);
+var $elm$bytes$Bytes$Encode$U8 = function (a) {
+	return {$: 'U8', a: a};
+};
+var $elm$bytes$Bytes$Encode$unsignedInt8 = $elm$bytes$Bytes$Encode$U8;
+var $lamdera$codecs$Lamdera$Wire3$encodeBool = function (b) {
+	return $elm$bytes$Bytes$Encode$unsignedInt8(
+		function () {
+			if (!b) {
+				return 0;
+			} else {
+				return 1;
+			}
+		}());
+};
 var $elm$bytes$Bytes$Encode$getWidth = function (builder) {
 	switch (builder.$) {
 		case 'I8':
@@ -3132,27 +3328,69 @@ var $elm$bytes$Bytes$Encode$writeSequence$ = function (builders, mb, offset) {
 	}
 };
 var $elm$bytes$Bytes$Encode$writeSequence = F3($elm$bytes$Bytes$Encode$writeSequence$);
-var $elm$bytes$Bytes$Decode$fail = $elm$bytes$Bytes$Decode$Decoder(_Bytes_decodeFailure);
-var $elm$bytes$Bytes$Decode$succeed = function (a) {
-	return $elm$bytes$Bytes$Decode$Decoder(
-		F2(
-			function (_v0, offset) {
-				return _Utils_Tuple2(offset, a);
-			}));
+var $elm$bytes$Bytes$Decode$decode$ = function (_v0, bs) {
+	var decoder = _v0.a;
+	return A2(_Bytes_decode, decoder, bs);
 };
-var $elm$bytes$Bytes$Decode$unsignedInt8 = $elm$bytes$Bytes$Decode$Decoder(_Bytes_read_u8);
-var $lamdera$codecs$Lamdera$Wire3$decodeBool = $elm$bytes$Bytes$Decode$andThen$(
-	function (s) {
-		switch (s) {
-			case 0:
-				return $elm$bytes$Bytes$Decode$succeed(false);
-			case 1:
-				return $elm$bytes$Bytes$Decode$succeed(true);
-			default:
-				return $elm$bytes$Bytes$Decode$fail;
-		}
-	},
-	$elm$bytes$Bytes$Decode$unsignedInt8);
+var $elm$bytes$Bytes$Decode$decode = F2($elm$bytes$Bytes$Decode$decode$);
+var $elm$bytes$Bytes$Decode$Done = function (a) {
+	return {$: 'Done', a: a};
+};
+var $elm$bytes$Bytes$Decode$Loop = function (a) {
+	return {$: 'Loop', a: a};
+};
+var $elm$core$String$cons = _String_cons;
+var $elm$core$String$fromChar = function (_char) {
+	return A2($elm$core$String$cons, _char, '');
+};
+var $author$project$Harness$hexDigit = function (n) {
+	switch (n) {
+		case 0:
+			return _Utils_chr('0');
+		case 1:
+			return _Utils_chr('1');
+		case 2:
+			return _Utils_chr('2');
+		case 3:
+			return _Utils_chr('3');
+		case 4:
+			return _Utils_chr('4');
+		case 5:
+			return _Utils_chr('5');
+		case 6:
+			return _Utils_chr('6');
+		case 7:
+			return _Utils_chr('7');
+		case 8:
+			return _Utils_chr('8');
+		case 9:
+			return _Utils_chr('9');
+		case 10:
+			return _Utils_chr('a');
+		case 11:
+			return _Utils_chr('b');
+		case 12:
+			return _Utils_chr('c');
+		case 13:
+			return _Utils_chr('d');
+		case 14:
+			return _Utils_chr('e');
+		default:
+			return _Utils_chr('f');
+	}
+};
+var $elm$core$Basics$modBy = _Basics_modBy;
+var $author$project$Harness$byteToHex = function (n) {
+	return _Utils_ap(
+		$elm$core$String$fromChar(
+			$author$project$Harness$hexDigit((n / 16) | 0)),
+		$elm$core$String$fromChar(
+			$author$project$Harness$hexDigit(
+				A2($elm$core$Basics$modBy, 16, n))));
+};
+var $elm$bytes$Bytes$Decode$Decoder = function (a) {
+	return {$: 'Decoder', a: a};
+};
 var $elm$bytes$Bytes$Decode$map$ = function (func, _v0) {
 	var decodeA = _v0.a;
 	return $elm$bytes$Bytes$Decode$Decoder(
@@ -3167,105 +3405,79 @@ var $elm$bytes$Bytes$Decode$map$ = function (func, _v0) {
 			}));
 };
 var $elm$bytes$Bytes$Decode$map = F2($elm$bytes$Bytes$Decode$map$);
-var $lamdera$codecs$Lamdera$Wire3$andMapDecode$ = function (d, d2) {
-	return $elm$bytes$Bytes$Decode$andThen$(
-		function (v) {
-			return $elm$bytes$Bytes$Decode$map$(v, d);
-		},
-		d2);
-};
-var $lamdera$codecs$Lamdera$Wire3$andMapDecode = F2($lamdera$codecs$Lamdera$Wire3$andMapDecode$);
-var $lamdera$codecs$Lamdera$Wire3$endianness = $elm$bytes$Bytes$LE;
-var $elm$bytes$Bytes$Decode$float64 = function (endianness) {
+var $elm$bytes$Bytes$Decode$succeed = function (a) {
 	return $elm$bytes$Bytes$Decode$Decoder(
-		_Bytes_read_f64(
-			_Utils_eq(endianness, $elm$bytes$Bytes$LE)));
+		F2(
+			function (_v0, offset) {
+				return _Utils_Tuple2(offset, a);
+			}));
 };
-var $lamdera$codecs$Lamdera$Wire3$decodeFloat64 = $elm$bytes$Bytes$Decode$float64($lamdera$codecs$Lamdera$Wire3$endianness);
-var $lamdera$codecs$Lamdera$Wire3$identityFloatToInt = $elm$core$Basics$floor;
-var $elm$core$Basics$negate = function (n) {
-	return -n;
-};
-var $lamdera$codecs$Lamdera$Wire3$intDivBy$ = function (b, a) {
-	var v = a / b;
-	return (v < 0) ? (-$elm$core$Basics$floor(-v)) : $elm$core$Basics$floor(v);
-};
-var $lamdera$codecs$Lamdera$Wire3$intDivBy = F2($lamdera$codecs$Lamdera$Wire3$intDivBy$);
-var $elm$core$Basics$modBy = _Basics_modBy;
-var $lamdera$codecs$Lamdera$Wire3$unsignedToSigned = function (i) {
-	return (A2($elm$core$Basics$modBy, 2, i) === 1) ? $lamdera$codecs$Lamdera$Wire3$intDivBy$(-2, i + 1) : $lamdera$codecs$Lamdera$Wire3$intDivBy$(2, i);
-};
-var $lamdera$codecs$Lamdera$Wire3$decodeInt64 = function () {
-	var d = $lamdera$codecs$Lamdera$Wire3$andMapDecode($elm$bytes$Bytes$Decode$unsignedInt8);
-	return $elm$bytes$Bytes$Decode$andThen$(
-		function (n0) {
-			return (n0 <= 215) ? $elm$bytes$Bytes$Decode$map$(
-				$lamdera$codecs$Lamdera$Wire3$unsignedToSigned,
-				$elm$bytes$Bytes$Decode$succeed(n0)) : ((n0 < 252) ? $elm$bytes$Bytes$Decode$map$(
-				$lamdera$codecs$Lamdera$Wire3$unsignedToSigned,
-				d(
-					$elm$bytes$Bytes$Decode$succeed(
-						function (b0) {
-							return (((n0 - 216) * 256) + b0) + 216;
-						}))) : ((n0 === 252) ? $elm$bytes$Bytes$Decode$map$(
-				$lamdera$codecs$Lamdera$Wire3$unsignedToSigned,
-				d(
-					d(
-						$elm$bytes$Bytes$Decode$succeed(
-							F2(
-								function (b0, b1) {
-									return (b0 * 256) + b1;
-								}))))) : ((n0 === 253) ? $elm$bytes$Bytes$Decode$map$(
-				$lamdera$codecs$Lamdera$Wire3$unsignedToSigned,
-				d(
-					d(
-						d(
-							$elm$bytes$Bytes$Decode$succeed(
-								F3(
-									function (b0, b1, b2) {
-										return (((b0 * 256) + b1) * 256) + b2;
-									})))))) : ((n0 === 254) ? $elm$bytes$Bytes$Decode$map$(
-				$lamdera$codecs$Lamdera$Wire3$unsignedToSigned,
-				d(
-					d(
-						d(
-							d(
-								$elm$bytes$Bytes$Decode$succeed(
-									F4(
-										function (b0, b1, b2, b3) {
-											return (((((b0 * 256) + b1) * 256) + b2) * 256) + b3;
-										}))))))) : $elm$bytes$Bytes$Decode$map$($lamdera$codecs$Lamdera$Wire3$identityFloatToInt, $lamdera$codecs$Lamdera$Wire3$decodeFloat64)))));
+var $elm$bytes$Bytes$Decode$unsignedInt8 = $elm$bytes$Bytes$Decode$Decoder(_Bytes_read_u8);
+var $author$project$Harness$hexEncodeStep = function (_v0) {
+	var remaining = _v0.a;
+	var acc = _v0.b;
+	return (remaining <= 0) ? $elm$bytes$Bytes$Decode$succeed(
+		$elm$bytes$Bytes$Decode$Done(
+			$elm$core$String$join$(
+				'',
+				$elm$core$List$reverse(acc)))) : $elm$bytes$Bytes$Decode$map$(
+		function (_byte) {
+			return $elm$bytes$Bytes$Decode$Loop(
+				_Utils_Tuple2(
+					remaining - 1,
+					A2(
+						$elm$core$List$cons,
+						$author$project$Harness$byteToHex(_byte),
+						acc)));
 		},
 		$elm$bytes$Bytes$Decode$unsignedInt8);
-}();
-var $lamdera$codecs$Lamdera$Wire3$decodeInt = $lamdera$codecs$Lamdera$Wire3$decodeInt64;
-var $elm$bytes$Bytes$Decode$string = function (n) {
+};
+var $elm$bytes$Bytes$Decode$loopHelp$ = function (state, callback, bites, offset) {
+	loopHelp:
+	while (true) {
+		var _v0 = callback(state);
+		var decoder = _v0.a;
+		var _v1 = A2(decoder, bites, offset);
+		var newOffset = _v1.a;
+		var step = _v1.b;
+		if (step.$ === 'Loop') {
+			var newState = step.a;
+			var $temp$state = newState,
+				$temp$offset = newOffset;
+			state = $temp$state;
+			offset = $temp$offset;
+			continue loopHelp;
+		} else {
+			var result = step.a;
+			return _Utils_Tuple2(newOffset, result);
+		}
+	}
+};
+var $elm$bytes$Bytes$Decode$loopHelp = F4($elm$bytes$Bytes$Decode$loopHelp$);
+var $elm$bytes$Bytes$Decode$loop$ = function (state, callback) {
 	return $elm$bytes$Bytes$Decode$Decoder(
-		_Bytes_read_string(n));
+		A2($elm$bytes$Bytes$Decode$loopHelp, state, callback));
 };
-var $lamdera$codecs$Lamdera$Wire3$decodeString = $elm$bytes$Bytes$Decode$andThen$($elm$bytes$Bytes$Decode$string, $lamdera$codecs$Lamdera$Wire3$decodeInt64);
-var $elm$bytes$Bytes$Encode$U8 = function (a) {
-	return {$: 'U8', a: a};
+var $elm$bytes$Bytes$Decode$loop = F2($elm$bytes$Bytes$Decode$loop$);
+var $author$project$Harness$hexEncodeDecoder = function (width) {
+	return $elm$bytes$Bytes$Decode$loop$(
+		_Utils_Tuple2(width, _List_Nil),
+		$author$project$Harness$hexEncodeStep);
 };
-var $elm$bytes$Bytes$Encode$unsignedInt8 = $elm$bytes$Bytes$Encode$U8;
-var $lamdera$codecs$Lamdera$Wire3$encodeBool = function (b) {
-	return $elm$bytes$Bytes$Encode$unsignedInt8(
-		function () {
-			if (!b) {
-				return 0;
-			} else {
-				return 1;
-			}
-		}());
+var $elm$bytes$Bytes$width = _Bytes_width;
+var $author$project$Harness$bytesToHex = function (bytes) {
+	var width = $elm$bytes$Bytes$width(bytes);
+	var _v0 = $elm$bytes$Bytes$Decode$decode$(
+		$author$project$Harness$hexEncodeDecoder(width),
+		bytes);
+	if (_v0.$ === 'Just') {
+		var hex = _v0.a;
+		return hex;
+	} else {
+		return '';
+	}
 };
-var $elm$bytes$Bytes$Encode$F64$ = function (a, b) {
-	return {$: 'F64', a: a, b: b};
-};
-var $elm$bytes$Bytes$Encode$F64 = F2($elm$bytes$Bytes$Encode$F64$);
-var $elm$bytes$Bytes$Encode$float64 = $elm$bytes$Bytes$Encode$F64;
-var $lamdera$codecs$Lamdera$Wire3$encodeFloat64 = function (f) {
-	return A2($elm$bytes$Bytes$Encode$float64, $lamdera$codecs$Lamdera$Wire3$endianness, f);
-};
+var $elm$bytes$Bytes$Encode$encode = _Bytes_encode;
 var $elm$core$List$foldrHelper$ = function (fn, acc, ctr, ls) {
 	if (!ls.b) {
 		return acc;
@@ -3320,6 +3532,61 @@ var $elm$core$List$foldr$ = function (fn, acc, ls) {
 	return $elm$core$List$foldrHelper$(fn, acc, 0, ls);
 };
 var $elm$core$List$foldr = F3($elm$core$List$foldr$);
+var $elm$core$List$filter$ = function (isGood, list) {
+	return $elm$core$List$foldr$(
+		F2(
+			function (x, xs) {
+				return isGood(x) ? A2($elm$core$List$cons, x, xs) : xs;
+			}),
+		_List_Nil,
+		list);
+};
+var $elm$core$List$filter = F2($elm$core$List$filter$);
+var $elm$core$List$head = function (list) {
+	if (list.b) {
+		var x = list.a;
+		var xs = list.b;
+		return $elm$core$Maybe$Just(x);
+	} else {
+		return $elm$core$Maybe$Nothing;
+	}
+};
+var $author$project$Harness$encodeCase$ = function (encoder, fixtures, caseId) {
+	var _v0 = $elm$core$List$head(
+		$elm$core$List$filter$(
+			function (_v1) {
+				var id = _v1.a;
+				return _Utils_eq(id, caseId);
+			},
+			fixtures));
+	if (_v0.$ === 'Just') {
+		var _v2 = _v0.a;
+		var value = _v2.b;
+		return 'OK ' + $author$project$Harness$bytesToHex(
+			$elm$bytes$Bytes$Encode$encode(
+				encoder(value)));
+	} else {
+		return 'ERR unknown-case:' + caseId;
+	}
+};
+var $author$project$Harness$encodeCase = F3($author$project$Harness$encodeCase$);
+var $lamdera$codecs$Lamdera$Wire3$endianness = $elm$bytes$Bytes$LE;
+var $elm$bytes$Bytes$Encode$F64$ = function (a, b) {
+	return {$: 'F64', a: a, b: b};
+};
+var $elm$bytes$Bytes$Encode$F64 = F2($elm$bytes$Bytes$Encode$F64$);
+var $elm$bytes$Bytes$Encode$float64 = $elm$bytes$Bytes$Encode$F64;
+var $lamdera$codecs$Lamdera$Wire3$encodeFloat64 = function (f) {
+	return A2($elm$bytes$Bytes$Encode$float64, $lamdera$codecs$Lamdera$Wire3$endianness, f);
+};
+var $elm$core$Basics$negate = function (n) {
+	return -n;
+};
+var $lamdera$codecs$Lamdera$Wire3$intDivBy$ = function (b, a) {
+	var v = a / b;
+	return (v < 0) ? (-$elm$core$Basics$floor(-v)) : $elm$core$Basics$floor(v);
+};
+var $lamdera$codecs$Lamdera$Wire3$intDivBy = F2($lamdera$codecs$Lamdera$Wire3$intDivBy$);
 var $elm$core$List$map$ = function (f, xs) {
 	return $elm$core$List$foldr$(
 		F2(
@@ -3427,387 +3694,30 @@ var $lamdera$codecs$Lamdera$Wire3$encodeString = function (s) {
 				$elm$bytes$Bytes$Encode$string(s)
 			]));
 };
-var $elm$bytes$Bytes$Decode$decode$ = function (_v0, bs) {
-	var decoder = _v0.a;
-	return A2(_Bytes_decode, decoder, bs);
-};
-var $elm$bytes$Bytes$Decode$decode = F2($elm$bytes$Bytes$Decode$decode$);
-var $elm$bytes$Bytes$Decode$Done = function (a) {
-	return {$: 'Done', a: a};
-};
-var $elm$bytes$Bytes$Decode$Loop = function (a) {
-	return {$: 'Loop', a: a};
-};
-var $elm$core$String$cons = _String_cons;
-var $elm$core$String$fromChar = function (_char) {
-	return A2($elm$core$String$cons, _char, '');
-};
-var $author$project$Harness$hexDigit = function (n) {
-	switch (n) {
-		case 0:
-			return _Utils_chr('0');
-		case 1:
-			return _Utils_chr('1');
-		case 2:
-			return _Utils_chr('2');
-		case 3:
-			return _Utils_chr('3');
-		case 4:
-			return _Utils_chr('4');
-		case 5:
-			return _Utils_chr('5');
-		case 6:
-			return _Utils_chr('6');
-		case 7:
-			return _Utils_chr('7');
-		case 8:
-			return _Utils_chr('8');
-		case 9:
-			return _Utils_chr('9');
-		case 10:
-			return _Utils_chr('a');
-		case 11:
-			return _Utils_chr('b');
-		case 12:
-			return _Utils_chr('c');
-		case 13:
-			return _Utils_chr('d');
-		case 14:
-			return _Utils_chr('e');
-		default:
-			return _Utils_chr('f');
-	}
-};
-var $author$project$Harness$byteToHex = function (n) {
-	return _Utils_ap(
-		$elm$core$String$fromChar(
-			$author$project$Harness$hexDigit((n / 16) | 0)),
-		$elm$core$String$fromChar(
-			$author$project$Harness$hexDigit(
-				A2($elm$core$Basics$modBy, 16, n))));
-};
-var $author$project$Harness$hexEncodeStep = function (_v0) {
-	var remaining = _v0.a;
-	var acc = _v0.b;
-	return (remaining <= 0) ? $elm$bytes$Bytes$Decode$succeed(
-		$elm$bytes$Bytes$Decode$Done(
-			$elm$core$String$join$(
-				'',
-				$elm$core$List$reverse(acc)))) : $elm$bytes$Bytes$Decode$map$(
-		function (_byte) {
-			return $elm$bytes$Bytes$Decode$Loop(
-				_Utils_Tuple2(
-					remaining - 1,
-					A2(
-						$elm$core$List$cons,
-						$author$project$Harness$byteToHex(_byte),
-						acc)));
-		},
-		$elm$bytes$Bytes$Decode$unsignedInt8);
-};
-var $elm$bytes$Bytes$Decode$loopHelp$ = function (state, callback, bites, offset) {
-	loopHelp:
-	while (true) {
-		var _v0 = callback(state);
-		var decoder = _v0.a;
-		var _v1 = A2(decoder, bites, offset);
-		var newOffset = _v1.a;
-		var step = _v1.b;
-		if (step.$ === 'Loop') {
-			var newState = step.a;
-			var $temp$state = newState,
-				$temp$offset = newOffset;
-			state = $temp$state;
-			offset = $temp$offset;
-			continue loopHelp;
-		} else {
-			var result = step.a;
-			return _Utils_Tuple2(newOffset, result);
-		}
-	}
-};
-var $elm$bytes$Bytes$Decode$loopHelp = F4($elm$bytes$Bytes$Decode$loopHelp$);
-var $elm$bytes$Bytes$Decode$loop$ = function (state, callback) {
-	return $elm$bytes$Bytes$Decode$Decoder(
-		A2($elm$bytes$Bytes$Decode$loopHelp, state, callback));
-};
-var $elm$bytes$Bytes$Decode$loop = F2($elm$bytes$Bytes$Decode$loop$);
-var $author$project$Harness$hexEncodeDecoder = function (width) {
-	return $elm$bytes$Bytes$Decode$loop$(
-		_Utils_Tuple2(width, _List_Nil),
-		$author$project$Harness$hexEncodeStep);
-};
-var $elm$bytes$Bytes$width = _Bytes_width;
-var $author$project$Harness$bytesToHex = function (bytes) {
-	var width = $elm$bytes$Bytes$width(bytes);
-	var _v0 = $elm$bytes$Bytes$Decode$decode$(
-		$author$project$Harness$hexEncodeDecoder(width),
-		bytes);
-	if (_v0.$ === 'Just') {
-		var hex = _v0.a;
-		return hex;
-	} else {
-		return '';
-	}
-};
-var $elm$bytes$Bytes$Encode$encode = _Bytes_encode;
-var $author$project$Harness$roundTrip$ = function (decoder, encoder, bytes) {
-	var _v0 = $elm$bytes$Bytes$Decode$decode$(decoder, bytes);
-	if (_v0.$ === 'Nothing') {
-		return 'ERR decode-failed';
-	} else {
-		var value = _v0.a;
-		return 'OK ' + $author$project$Harness$bytesToHex(
-			$elm$bytes$Bytes$Encode$encode(
-				encoder(value)));
-	}
-};
-var $author$project$Harness$roundTrip = F3($author$project$Harness$roundTrip$);
-var $lamdera$codecs$Lamdera$Wire3$failDecode = $elm$bytes$Bytes$Decode$fail;
-var $lamdera$codecs$Lamdera$Wire3$decodeResult$ = function (decErr, decVal) {
-	return $elm$bytes$Bytes$Decode$andThen$(
-		function (c) {
-			switch (c) {
-				case 0:
-					return $elm$bytes$Bytes$Decode$map$($elm$core$Result$Ok, decVal);
-				case 1:
-					return $elm$bytes$Bytes$Decode$map$($elm$core$Result$Err, decErr);
-				default:
-					return $lamdera$codecs$Lamdera$Wire3$failDecode;
-			}
-		},
-		$elm$bytes$Bytes$Decode$unsignedInt8);
-};
-var $lamdera$codecs$Lamdera$Wire3$decodeResult = F2($lamdera$codecs$Lamdera$Wire3$decodeResult$);
-var $lamdera$codecs$Lamdera$Wire3$succeedDecode = $elm$bytes$Bytes$Decode$succeed;
-var $author$project$TestTypes$w3_decode_ApiResponse = $lamdera$codecs$Lamdera$Wire3$andMapDecode$(
-	$lamdera$codecs$Lamdera$Wire3$decodeResult$($lamdera$codecs$Lamdera$Wire3$decodeString, $lamdera$codecs$Lamdera$Wire3$decodeInt),
-	$lamdera$codecs$Lamdera$Wire3$andMapDecode$(
-		$lamdera$codecs$Lamdera$Wire3$decodeString,
-		$lamdera$codecs$Lamdera$Wire3$succeedDecode(
-			F2(
-				function (message0, result0) {
-					return {message: message0, result: result0};
-				}))));
-var $author$project$TestTypes$Blue = {$: 'Blue'};
-var $author$project$TestTypes$Green = {$: 'Green'};
-var $author$project$TestTypes$Red = {$: 'Red'};
-var $lamdera$codecs$Lamdera$Wire3$andThenDecode = $elm$bytes$Bytes$Decode$andThen;
-var $author$project$TestTypes$w3_decode_Color = A2(
-	$lamdera$codecs$Lamdera$Wire3$andThenDecode,
-	function (w3v) {
-		switch (w3v) {
-			case 0:
-				return $lamdera$codecs$Lamdera$Wire3$succeedDecode($author$project$TestTypes$Blue);
-			case 1:
-				return $lamdera$codecs$Lamdera$Wire3$succeedDecode($author$project$TestTypes$Green);
-			case 2:
-				return $lamdera$codecs$Lamdera$Wire3$succeedDecode($author$project$TestTypes$Red);
-			default:
-				return $lamdera$codecs$Lamdera$Wire3$failDecode;
-		}
-	},
-	$elm$bytes$Bytes$Decode$unsignedInt8);
-var $lamdera$codecs$Lamdera$Wire3$decodeFloat = $lamdera$codecs$Lamdera$Wire3$decodeFloat64;
-var $lamdera$codecs$Lamdera$Wire3$decodePair$ = function (c_a, c_b) {
-	return $lamdera$codecs$Lamdera$Wire3$andMapDecode$(
-		c_b,
-		$lamdera$codecs$Lamdera$Wire3$andMapDecode$(
-			c_a,
-			$elm$bytes$Bytes$Decode$succeed(
-				F2(
-					function (a, b) {
-						return _Utils_Tuple2(a, b);
-					}))));
-};
-var $lamdera$codecs$Lamdera$Wire3$decodePair = F2($lamdera$codecs$Lamdera$Wire3$decodePair$);
-var $author$project$TestTypes$w3_decode_Coordinate = $lamdera$codecs$Lamdera$Wire3$andMapDecode$(
-	$lamdera$codecs$Lamdera$Wire3$decodePair$($lamdera$codecs$Lamdera$Wire3$decodeFloat, $lamdera$codecs$Lamdera$Wire3$decodeFloat),
-	$lamdera$codecs$Lamdera$Wire3$andMapDecode$(
-		$lamdera$codecs$Lamdera$Wire3$decodeString,
-		$lamdera$codecs$Lamdera$Wire3$succeedDecode(
-			F2(
-				function (label0, point0) {
-					return {label: label0, point: point0};
-				}))));
-var $lamdera$codecs$Lamdera$Wire3$decodeList = function (decoder) {
-	var listStep = function (_v0) {
-		var n = _v0.a;
-		var xs = _v0.b;
-		return (n <= 0) ? $elm$bytes$Bytes$Decode$succeed(
-			$elm$bytes$Bytes$Decode$Done(xs)) : $elm$bytes$Bytes$Decode$map$(
-			function (x) {
-				return $elm$bytes$Bytes$Decode$Loop(
-					_Utils_Tuple2(
-						n - 1,
-						A2($elm$core$List$cons, x, xs)));
-			},
-			decoder);
-	};
-	return $elm$bytes$Bytes$Decode$andThen$(
-		function (len) {
-			return $elm$bytes$Bytes$Decode$map$(
-				$elm$core$List$reverse,
-				$elm$bytes$Bytes$Decode$loop$(
-					_Utils_Tuple2(len, _List_Nil),
-					listStep));
-		},
-		$lamdera$codecs$Lamdera$Wire3$decodeInt64);
-};
-var $elm$core$Dict$RBEmpty_elm_builtin = {$: 'RBEmpty_elm_builtin'};
-var $elm$core$Dict$empty = $elm$core$Dict$RBEmpty_elm_builtin;
-var $elm$core$Dict$Black = {$: 'Black'};
-var $elm$core$Dict$RBNode_elm_builtin$ = function (a, b, c, d, e) {
-	return {$: 'RBNode_elm_builtin', a: a, b: b, c: c, d: d, e: e};
-};
-var $elm$core$Dict$RBNode_elm_builtin = F5($elm$core$Dict$RBNode_elm_builtin$);
-var $elm$core$Dict$Red = {$: 'Red'};
-var $elm$core$Dict$balance$ = function (color, key, value, left, right) {
-	if ((right.$ === 'RBNode_elm_builtin') && (right.a.$ === 'Red')) {
-		var _v1 = right.a;
-		var rK = right.b;
-		var rV = right.c;
-		var rLeft = right.d;
-		var rRight = right.e;
-		if ((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Red')) {
-			var _v3 = left.a;
-			var lK = left.b;
-			var lV = left.c;
-			var lLeft = left.d;
-			var lRight = left.e;
-			return $elm$core$Dict$RBNode_elm_builtin$(
-				$elm$core$Dict$Red,
-				key,
-				value,
-				$elm$core$Dict$RBNode_elm_builtin$($elm$core$Dict$Black, lK, lV, lLeft, lRight),
-				$elm$core$Dict$RBNode_elm_builtin$($elm$core$Dict$Black, rK, rV, rLeft, rRight));
-		} else {
-			return $elm$core$Dict$RBNode_elm_builtin$(
-				color,
-				rK,
-				rV,
-				$elm$core$Dict$RBNode_elm_builtin$($elm$core$Dict$Red, key, value, left, rLeft),
-				rRight);
-		}
-	} else {
-		if ((((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Red')) && (left.d.$ === 'RBNode_elm_builtin')) && (left.d.a.$ === 'Red')) {
-			var _v5 = left.a;
-			var lK = left.b;
-			var lV = left.c;
-			var _v6 = left.d;
-			var _v7 = _v6.a;
-			var llK = _v6.b;
-			var llV = _v6.c;
-			var llLeft = _v6.d;
-			var llRight = _v6.e;
-			var lRight = left.e;
-			return $elm$core$Dict$RBNode_elm_builtin$(
-				$elm$core$Dict$Red,
-				lK,
-				lV,
-				$elm$core$Dict$RBNode_elm_builtin$($elm$core$Dict$Black, llK, llV, llLeft, llRight),
-				$elm$core$Dict$RBNode_elm_builtin$($elm$core$Dict$Black, key, value, lRight, right));
-		} else {
-			return $elm$core$Dict$RBNode_elm_builtin$(color, key, value, left, right);
-		}
-	}
-};
-var $elm$core$Dict$balance = F5($elm$core$Dict$balance$);
-var $elm$core$Basics$compare = _Utils_compare;
-var $elm$core$Dict$insertHelp$ = function (key, value, dict) {
-	if (dict.$ === 'RBEmpty_elm_builtin') {
-		return $elm$core$Dict$RBNode_elm_builtin$($elm$core$Dict$Red, key, value, $elm$core$Dict$RBEmpty_elm_builtin, $elm$core$Dict$RBEmpty_elm_builtin);
-	} else {
-		var nColor = dict.a;
-		var nKey = dict.b;
-		var nValue = dict.c;
-		var nLeft = dict.d;
-		var nRight = dict.e;
-		var _v1 = A2($elm$core$Basics$compare, key, nKey);
-		switch (_v1.$) {
-			case 'LT':
-				return $elm$core$Dict$balance$(
-					nColor,
-					nKey,
-					nValue,
-					$elm$core$Dict$insertHelp$(key, value, nLeft),
-					nRight);
-			case 'EQ':
-				return $elm$core$Dict$RBNode_elm_builtin$(nColor, nKey, value, nLeft, nRight);
-			default:
-				return $elm$core$Dict$balance$(
-					nColor,
-					nKey,
-					nValue,
-					nLeft,
-					$elm$core$Dict$insertHelp$(key, value, nRight));
-		}
-	}
-};
-var $elm$core$Dict$insertHelp = F3($elm$core$Dict$insertHelp$);
-var $elm$core$Dict$insert$ = function (key, value, dict) {
-	var _v0 = $elm$core$Dict$insertHelp$(key, value, dict);
-	if ((_v0.$ === 'RBNode_elm_builtin') && (_v0.a.$ === 'Red')) {
-		var _v1 = _v0.a;
-		var k = _v0.b;
-		var v = _v0.c;
-		var l = _v0.d;
-		var r = _v0.e;
-		return $elm$core$Dict$RBNode_elm_builtin$($elm$core$Dict$Black, k, v, l, r);
-	} else {
-		var x = _v0;
-		return x;
-	}
-};
-var $elm$core$Dict$insert = F3($elm$core$Dict$insert$);
-var $elm$core$Dict$fromList = function (assocs) {
-	return $elm$core$List$foldl$(
-		F2(
-			function (_v0, dict) {
-				var key = _v0.a;
-				var value = _v0.b;
-				return $elm$core$Dict$insert$(key, value, dict);
-			}),
-		$elm$core$Dict$empty,
-		assocs);
-};
-var $lamdera$codecs$Lamdera$Wire3$decodeDict$ = function (decKey, decValue) {
-	return $elm$bytes$Bytes$Decode$map$(
-		$elm$core$Dict$fromList,
-		$lamdera$codecs$Lamdera$Wire3$decodeList(
-			$lamdera$codecs$Lamdera$Wire3$decodePair$(decKey, decValue)));
-};
-var $lamdera$codecs$Lamdera$Wire3$decodeDict = F2($lamdera$codecs$Lamdera$Wire3$decodeDict$);
-var $lamdera$codecs$Lamdera$Wire3$decodeMaybe = function (decVal) {
-	return $elm$bytes$Bytes$Decode$andThen$(
-		function (c) {
-			switch (c) {
-				case 0:
-					return $lamdera$codecs$Lamdera$Wire3$succeedDecode($elm$core$Maybe$Nothing);
-				case 1:
-					return $elm$bytes$Bytes$Decode$map$($elm$core$Maybe$Just, decVal);
-				default:
-					return $lamdera$codecs$Lamdera$Wire3$failDecode;
-			}
-		},
-		$elm$bytes$Bytes$Decode$unsignedInt8);
-};
-var $author$project$TestTypes$w3_decode_Dashboard = $lamdera$codecs$Lamdera$Wire3$andMapDecode$(
-	$lamdera$codecs$Lamdera$Wire3$decodeDict$(
-		$lamdera$codecs$Lamdera$Wire3$decodeString,
-		$lamdera$codecs$Lamdera$Wire3$decodeList($lamdera$codecs$Lamdera$Wire3$decodeInt)),
-	$lamdera$codecs$Lamdera$Wire3$andMapDecode$(
-		$lamdera$codecs$Lamdera$Wire3$decodeMaybe(
-			$lamdera$codecs$Lamdera$Wire3$decodeList($lamdera$codecs$Lamdera$Wire3$decodeString)),
-		$lamdera$codecs$Lamdera$Wire3$andMapDecode$(
-			$lamdera$codecs$Lamdera$Wire3$decodeResult$(
-				$lamdera$codecs$Lamdera$Wire3$decodeString,
-				$lamdera$codecs$Lamdera$Wire3$decodeMaybe($lamdera$codecs$Lamdera$Wire3$decodeInt)),
-			$lamdera$codecs$Lamdera$Wire3$succeedDecode(
-				F3(
-					function (nested0, optionalData0, userScores0) {
-						return {nested: nested0, optionalData: optionalData0, userScores: userScores0};
-					})))));
+var $author$project$Harness$floatFixtures = _List_fromArray(
+	[
+		_Utils_Tuple2('0', 0.0),
+		_Utils_Tuple2('1', 1.0),
+		_Utils_Tuple2('neg1', -1.0),
+		_Utils_Tuple2('pi', 3.14159265358979),
+		_Utils_Tuple2('tiny', 1.0e-10),
+		_Utils_Tuple2('big', 1.0e10)
+	]);
+var $author$project$Harness$intFixtures = _List_fromArray(
+	[
+		_Utils_Tuple2('0', 0),
+		_Utils_Tuple2('1', 1),
+		_Utils_Tuple2('neg1', -1),
+		_Utils_Tuple2('42', 42),
+		_Utils_Tuple2('boundary1', 107),
+		_Utils_Tuple2('boundary2', 108),
+		_Utils_Tuple2('boundary3', 4715),
+		_Utils_Tuple2('boundary4', 4716),
+		_Utils_Tuple2('large', 8388608),
+		_Utils_Tuple2('max', 9007199254740991),
+		_Utils_Tuple2('min', -9007199254740991),
+		_Utils_Tuple2('neg_large', -2147483648)
+	]);
 var $elm$core$Set$Set_elm_builtin = function (a) {
 	return {$: 'Set_elm_builtin', a: a};
 };
@@ -3821,37 +3731,40 @@ var $elm$core$Set$insert = F2($elm$core$Set$insert$);
 var $elm$core$Set$fromList = function (list) {
 	return $elm$core$List$foldl$($elm$core$Set$insert, $elm$core$Set$empty, list);
 };
-var $lamdera$codecs$Lamdera$Wire3$decodeSet = function (decVal) {
-	return $elm$bytes$Bytes$Decode$map$(
-		$elm$core$Set$fromList,
-		$lamdera$codecs$Lamdera$Wire3$decodeList(decVal));
-};
-var $author$project$TestTypes$w3_decode_Inventory = $lamdera$codecs$Lamdera$Wire3$andMapDecode$(
-	$lamdera$codecs$Lamdera$Wire3$decodeSet($lamdera$codecs$Lamdera$Wire3$decodeString),
-	$lamdera$codecs$Lamdera$Wire3$andMapDecode$(
-		$lamdera$codecs$Lamdera$Wire3$decodeMaybe($lamdera$codecs$Lamdera$Wire3$decodeString),
-		$lamdera$codecs$Lamdera$Wire3$andMapDecode$(
-			$lamdera$codecs$Lamdera$Wire3$decodeList($lamdera$codecs$Lamdera$Wire3$decodeString),
-			$lamdera$codecs$Lamdera$Wire3$andMapDecode$(
-				$lamdera$codecs$Lamdera$Wire3$decodeDict$($lamdera$codecs$Lamdera$Wire3$decodeString, $lamdera$codecs$Lamdera$Wire3$decodeInt),
-				$lamdera$codecs$Lamdera$Wire3$succeedDecode(
-					F4(
-						function (counts0, items0, selected0, tags0) {
-							return {counts: counts0, items: items0, selected: selected0, tags: tags0};
-						}))))));
-var $author$project$TestTypes$w3_decode_Person = $lamdera$codecs$Lamdera$Wire3$andMapDecode$(
-	$lamdera$codecs$Lamdera$Wire3$decodeFloat,
-	$lamdera$codecs$Lamdera$Wire3$andMapDecode$(
-		$lamdera$codecs$Lamdera$Wire3$decodeString,
-		$lamdera$codecs$Lamdera$Wire3$andMapDecode$(
-			$lamdera$codecs$Lamdera$Wire3$decodeInt,
-			$lamdera$codecs$Lamdera$Wire3$andMapDecode$(
-				$lamdera$codecs$Lamdera$Wire3$decodeBool,
-				$lamdera$codecs$Lamdera$Wire3$succeedDecode(
-					F4(
-						function (active0, age0, name0, score0) {
-							return {active: active0, age: age0, name: name0, score: score0};
-						}))))));
+var $author$project$Harness$inventoryFixtures = _List_fromArray(
+	[
+		_Utils_Tuple2(
+		'empty',
+		{counts: $elm$core$Dict$empty, items: _List_Nil, selected: $elm$core$Maybe$Nothing, tags: $elm$core$Set$empty}),
+		_Utils_Tuple2(
+		'full',
+		{
+			counts: $elm$core$Dict$fromList(
+				_List_fromArray(
+					[
+						_Utils_Tuple2('apple', 3),
+						_Utils_Tuple2('banana', 5)
+					])),
+			items: _List_fromArray(
+				['apple', 'banana']),
+			selected: $elm$core$Maybe$Just('apple'),
+			tags: $elm$core$Set$fromList(
+				_List_fromArray(
+					['fruit', 'organic']))
+		})
+	]);
+var $author$project$Harness$personFixtures = _List_fromArray(
+	[
+		_Utils_Tuple2(
+		'alice',
+		{active: true, age: 30, name: 'Alice', score: 95.5}),
+		_Utils_Tuple2(
+		'empty',
+		{active: false, age: 0, name: '', score: 0.0}),
+		_Utils_Tuple2(
+		'unicode',
+		{active: true, age: 99, name: 'José García 🏠', score: -1.5})
+	]);
 var $author$project$TestTypes$Circle = function (a) {
 	return {$: 'Circle', a: a};
 };
@@ -3860,38 +3773,45 @@ var $author$project$TestTypes$Rectangle$ = function (a, b) {
 	return {$: 'Rectangle', a: a, b: b};
 };
 var $author$project$TestTypes$Rectangle = F2($author$project$TestTypes$Rectangle$);
-var $author$project$TestTypes$w3_decode_Shape = A2(
-	$lamdera$codecs$Lamdera$Wire3$andThenDecode,
-	function (w3v) {
-		switch (w3v) {
-			case 0:
-				return $lamdera$codecs$Lamdera$Wire3$andMapDecode$(
-					$lamdera$codecs$Lamdera$Wire3$decodeFloat,
-					$lamdera$codecs$Lamdera$Wire3$succeedDecode($author$project$TestTypes$Circle));
-			case 1:
-				return $lamdera$codecs$Lamdera$Wire3$succeedDecode($author$project$TestTypes$Point);
-			case 2:
-				return $lamdera$codecs$Lamdera$Wire3$andMapDecode$(
-					$lamdera$codecs$Lamdera$Wire3$decodeFloat,
-					$lamdera$codecs$Lamdera$Wire3$andMapDecode$(
-						$lamdera$codecs$Lamdera$Wire3$decodeFloat,
-						$lamdera$codecs$Lamdera$Wire3$succeedDecode($author$project$TestTypes$Rectangle)));
-			default:
-				return $lamdera$codecs$Lamdera$Wire3$failDecode;
-		}
-	},
-	$elm$bytes$Bytes$Decode$unsignedInt8);
-var $author$project$TestTypes$w3_decode_Team = $lamdera$codecs$Lamdera$Wire3$andMapDecode$(
-	$lamdera$codecs$Lamdera$Wire3$decodeList($author$project$TestTypes$w3_decode_Person),
-	$lamdera$codecs$Lamdera$Wire3$andMapDecode$(
-		$author$project$TestTypes$w3_decode_Person,
-		$lamdera$codecs$Lamdera$Wire3$andMapDecode$(
-			$author$project$TestTypes$w3_decode_Color,
-			$lamdera$codecs$Lamdera$Wire3$succeedDecode(
-				F3(
-					function (color0, leader0, members0) {
-						return {color: color0, leader: leader0, members: members0};
-					})))));
+var $author$project$Harness$shapeFixtures = _List_fromArray(
+	[
+		_Utils_Tuple2(
+		'circle',
+		$author$project$TestTypes$Circle(5.0)),
+		_Utils_Tuple2('point', $author$project$TestTypes$Point),
+		_Utils_Tuple2(
+		'rect',
+		$author$project$TestTypes$Rectangle$(3.0, 4.0))
+	]);
+var $author$project$Harness$stringFixtures = _List_fromArray(
+	[
+		_Utils_Tuple2('empty', ''),
+		_Utils_Tuple2('hello', 'hello'),
+		_Utils_Tuple2('unicode', 'héllo wörld'),
+		_Utils_Tuple2('cjk', '日本語テスト'),
+		_Utils_Tuple2('emoji', '🎉🚀🌍'),
+		_Utils_Tuple2('newlines', 'line1\nline2\ttab')
+	]);
+var $author$project$Harness$teamFixtures = _List_fromArray(
+	[
+		_Utils_Tuple2(
+		'small',
+		{
+			color: $author$project$TestTypes$Blue,
+			leader: {active: true, age: 30, name: 'Alice', score: 95.5},
+			members: _List_fromArray(
+				[
+					{active: true, age: 25, name: 'Bob', score: 80.0}
+				])
+		}),
+		_Utils_Tuple2(
+		'empty',
+		{
+			color: $author$project$TestTypes$Red,
+			leader: {active: true, age: 40, name: 'Solo', score: 100.0},
+			members: _List_Nil
+		})
+	]);
 var $author$project$TestTypes$Branch$ = function (a, b) {
 	return {$: 'Branch', a: a, b: b};
 };
@@ -3899,34 +3819,24 @@ var $author$project$TestTypes$Branch = F2($author$project$TestTypes$Branch$);
 var $author$project$TestTypes$Leaf = function (a) {
 	return {$: 'Leaf', a: a};
 };
-function $author$project$TestTypes$cyclic$w3_decode_Tree() {
-	return A2(
-		$lamdera$codecs$Lamdera$Wire3$andThenDecode,
-		function (w3v) {
-			switch (w3v) {
-				case 0:
-					return $lamdera$codecs$Lamdera$Wire3$andMapDecode$(
-						$author$project$TestTypes$cyclic$w3_decode_Tree(),
-						$lamdera$codecs$Lamdera$Wire3$andMapDecode$(
-							$author$project$TestTypes$cyclic$w3_decode_Tree(),
-							$lamdera$codecs$Lamdera$Wire3$succeedDecode($author$project$TestTypes$Branch)));
-				case 1:
-					return $lamdera$codecs$Lamdera$Wire3$andMapDecode$(
-						$lamdera$codecs$Lamdera$Wire3$decodeInt,
-						$lamdera$codecs$Lamdera$Wire3$succeedDecode($author$project$TestTypes$Leaf));
-				default:
-					return $lamdera$codecs$Lamdera$Wire3$failDecode;
-			}
-		},
-		$elm$bytes$Bytes$Decode$unsignedInt8);
-}
-try {
-	var $author$project$TestTypes$w3_decode_Tree = $author$project$TestTypes$cyclic$w3_decode_Tree();
-	$author$project$TestTypes$cyclic$w3_decode_Tree = function () {
-		return $author$project$TestTypes$w3_decode_Tree;
-	};
-} catch ($) {
-	throw 'Some top-level definitions from `TestTypes` are causing infinite recursion:\n\n  ┌─────┐\n  │    w3_decode_Tree\n  └─────┘\n\nThese errors are very tricky, so read https://elm-lang.org/0.19.1/bad-recursion to learn how to fix it!';}
+var $author$project$Harness$treeFixtures = _List_fromArray(
+	[
+		_Utils_Tuple2(
+		'leaf',
+		$author$project$TestTypes$Leaf(42)),
+		_Utils_Tuple2(
+		'branch',
+		$author$project$TestTypes$Branch$(
+			$author$project$TestTypes$Leaf(1),
+			$author$project$TestTypes$Leaf(2))),
+		_Utils_Tuple2(
+		'nested',
+		$author$project$TestTypes$Branch$(
+			$author$project$TestTypes$Branch$(
+				$author$project$TestTypes$Leaf(10),
+				$author$project$TestTypes$Leaf(20)),
+			$author$project$TestTypes$Leaf(30)))
+	]);
 var $lamdera$codecs$Lamdera$Wire3$encodeSequenceWithoutLength = function (s) {
 	return $elm$bytes$Bytes$Encode$sequence(s);
 };
@@ -4118,6 +4028,364 @@ var $author$project$TestTypes$w3_encode_Tree = function (w3v) {
 				]));
 	}
 };
+var $author$project$Harness$handleEncode$ = function (typeName, caseId) {
+	switch (typeName) {
+		case 'Int':
+			return $author$project$Harness$encodeCase$($lamdera$codecs$Lamdera$Wire3$encodeInt, $author$project$Harness$intFixtures, caseId);
+		case 'Float':
+			return $author$project$Harness$encodeCase$(
+				$elm$bytes$Bytes$Encode$float64($elm$bytes$Bytes$LE),
+				$author$project$Harness$floatFixtures,
+				caseId);
+		case 'Bool':
+			return $author$project$Harness$encodeCase$($lamdera$codecs$Lamdera$Wire3$encodeBool, $author$project$Harness$boolFixtures, caseId);
+		case 'String':
+			return $author$project$Harness$encodeCase$($lamdera$codecs$Lamdera$Wire3$encodeString, $author$project$Harness$stringFixtures, caseId);
+		case 'Color':
+			return $author$project$Harness$encodeCase$($author$project$TestTypes$w3_encode_Color, $author$project$Harness$colorFixtures, caseId);
+		case 'Shape':
+			return $author$project$Harness$encodeCase$($author$project$TestTypes$w3_encode_Shape, $author$project$Harness$shapeFixtures, caseId);
+		case 'Person':
+			return $author$project$Harness$encodeCase$($author$project$TestTypes$w3_encode_Person, $author$project$Harness$personFixtures, caseId);
+		case 'Inventory':
+			return $author$project$Harness$encodeCase$($author$project$TestTypes$w3_encode_Inventory, $author$project$Harness$inventoryFixtures, caseId);
+		case 'ApiResponse':
+			return $author$project$Harness$encodeCase$($author$project$TestTypes$w3_encode_ApiResponse, $author$project$Harness$apiResponseFixtures, caseId);
+		case 'Tree':
+			return $author$project$Harness$encodeCase$($author$project$TestTypes$w3_encode_Tree, $author$project$Harness$treeFixtures, caseId);
+		case 'Coordinate':
+			return $author$project$Harness$encodeCase$($author$project$TestTypes$w3_encode_Coordinate, $author$project$Harness$coordinateFixtures, caseId);
+		case 'Dashboard':
+			return $author$project$Harness$encodeCase$($author$project$TestTypes$w3_encode_Dashboard, $author$project$Harness$dashboardFixtures, caseId);
+		case 'Team':
+			return $author$project$Harness$encodeCase$($author$project$TestTypes$w3_encode_Team, $author$project$Harness$teamFixtures, caseId);
+		default:
+			return 'ERR unknown-encode-type:' + typeName;
+	}
+};
+var $author$project$Harness$handleEncode = F2($author$project$Harness$handleEncode$);
+var $elm$bytes$Bytes$Decode$andThen$ = function (callback, _v0) {
+	var decodeA = _v0.a;
+	return $elm$bytes$Bytes$Decode$Decoder(
+		F2(
+			function (bites, offset) {
+				var _v1 = A2(decodeA, bites, offset);
+				var newOffset = _v1.a;
+				var a = _v1.b;
+				var _v2 = callback(a);
+				var decodeB = _v2.a;
+				return A2(decodeB, bites, newOffset);
+			}));
+};
+var $elm$bytes$Bytes$Decode$andThen = F2($elm$bytes$Bytes$Decode$andThen$);
+var $elm$bytes$Bytes$Decode$fail = $elm$bytes$Bytes$Decode$Decoder(_Bytes_decodeFailure);
+var $lamdera$codecs$Lamdera$Wire3$decodeBool = $elm$bytes$Bytes$Decode$andThen$(
+	function (s) {
+		switch (s) {
+			case 0:
+				return $elm$bytes$Bytes$Decode$succeed(false);
+			case 1:
+				return $elm$bytes$Bytes$Decode$succeed(true);
+			default:
+				return $elm$bytes$Bytes$Decode$fail;
+		}
+	},
+	$elm$bytes$Bytes$Decode$unsignedInt8);
+var $lamdera$codecs$Lamdera$Wire3$andMapDecode$ = function (d, d2) {
+	return $elm$bytes$Bytes$Decode$andThen$(
+		function (v) {
+			return $elm$bytes$Bytes$Decode$map$(v, d);
+		},
+		d2);
+};
+var $lamdera$codecs$Lamdera$Wire3$andMapDecode = F2($lamdera$codecs$Lamdera$Wire3$andMapDecode$);
+var $elm$bytes$Bytes$Decode$float64 = function (endianness) {
+	return $elm$bytes$Bytes$Decode$Decoder(
+		_Bytes_read_f64(
+			_Utils_eq(endianness, $elm$bytes$Bytes$LE)));
+};
+var $lamdera$codecs$Lamdera$Wire3$decodeFloat64 = $elm$bytes$Bytes$Decode$float64($lamdera$codecs$Lamdera$Wire3$endianness);
+var $lamdera$codecs$Lamdera$Wire3$identityFloatToInt = $elm$core$Basics$floor;
+var $lamdera$codecs$Lamdera$Wire3$unsignedToSigned = function (i) {
+	return (A2($elm$core$Basics$modBy, 2, i) === 1) ? $lamdera$codecs$Lamdera$Wire3$intDivBy$(-2, i + 1) : $lamdera$codecs$Lamdera$Wire3$intDivBy$(2, i);
+};
+var $lamdera$codecs$Lamdera$Wire3$decodeInt64 = function () {
+	var d = $lamdera$codecs$Lamdera$Wire3$andMapDecode($elm$bytes$Bytes$Decode$unsignedInt8);
+	return $elm$bytes$Bytes$Decode$andThen$(
+		function (n0) {
+			return (n0 <= 215) ? $elm$bytes$Bytes$Decode$map$(
+				$lamdera$codecs$Lamdera$Wire3$unsignedToSigned,
+				$elm$bytes$Bytes$Decode$succeed(n0)) : ((n0 < 252) ? $elm$bytes$Bytes$Decode$map$(
+				$lamdera$codecs$Lamdera$Wire3$unsignedToSigned,
+				d(
+					$elm$bytes$Bytes$Decode$succeed(
+						function (b0) {
+							return (((n0 - 216) * 256) + b0) + 216;
+						}))) : ((n0 === 252) ? $elm$bytes$Bytes$Decode$map$(
+				$lamdera$codecs$Lamdera$Wire3$unsignedToSigned,
+				d(
+					d(
+						$elm$bytes$Bytes$Decode$succeed(
+							F2(
+								function (b0, b1) {
+									return (b0 * 256) + b1;
+								}))))) : ((n0 === 253) ? $elm$bytes$Bytes$Decode$map$(
+				$lamdera$codecs$Lamdera$Wire3$unsignedToSigned,
+				d(
+					d(
+						d(
+							$elm$bytes$Bytes$Decode$succeed(
+								F3(
+									function (b0, b1, b2) {
+										return (((b0 * 256) + b1) * 256) + b2;
+									})))))) : ((n0 === 254) ? $elm$bytes$Bytes$Decode$map$(
+				$lamdera$codecs$Lamdera$Wire3$unsignedToSigned,
+				d(
+					d(
+						d(
+							d(
+								$elm$bytes$Bytes$Decode$succeed(
+									F4(
+										function (b0, b1, b2, b3) {
+											return (((((b0 * 256) + b1) * 256) + b2) * 256) + b3;
+										}))))))) : $elm$bytes$Bytes$Decode$map$($lamdera$codecs$Lamdera$Wire3$identityFloatToInt, $lamdera$codecs$Lamdera$Wire3$decodeFloat64)))));
+		},
+		$elm$bytes$Bytes$Decode$unsignedInt8);
+}();
+var $lamdera$codecs$Lamdera$Wire3$decodeInt = $lamdera$codecs$Lamdera$Wire3$decodeInt64;
+var $elm$bytes$Bytes$Decode$string = function (n) {
+	return $elm$bytes$Bytes$Decode$Decoder(
+		_Bytes_read_string(n));
+};
+var $lamdera$codecs$Lamdera$Wire3$decodeString = $elm$bytes$Bytes$Decode$andThen$($elm$bytes$Bytes$Decode$string, $lamdera$codecs$Lamdera$Wire3$decodeInt64);
+var $author$project$Harness$roundTrip$ = function (decoder, encoder, bytes) {
+	var _v0 = $elm$bytes$Bytes$Decode$decode$(decoder, bytes);
+	if (_v0.$ === 'Nothing') {
+		return 'ERR decode-failed';
+	} else {
+		var value = _v0.a;
+		return 'OK ' + $author$project$Harness$bytesToHex(
+			$elm$bytes$Bytes$Encode$encode(
+				encoder(value)));
+	}
+};
+var $author$project$Harness$roundTrip = F3($author$project$Harness$roundTrip$);
+var $lamdera$codecs$Lamdera$Wire3$failDecode = $elm$bytes$Bytes$Decode$fail;
+var $lamdera$codecs$Lamdera$Wire3$decodeResult$ = function (decErr, decVal) {
+	return $elm$bytes$Bytes$Decode$andThen$(
+		function (c) {
+			switch (c) {
+				case 0:
+					return $elm$bytes$Bytes$Decode$map$($elm$core$Result$Ok, decVal);
+				case 1:
+					return $elm$bytes$Bytes$Decode$map$($elm$core$Result$Err, decErr);
+				default:
+					return $lamdera$codecs$Lamdera$Wire3$failDecode;
+			}
+		},
+		$elm$bytes$Bytes$Decode$unsignedInt8);
+};
+var $lamdera$codecs$Lamdera$Wire3$decodeResult = F2($lamdera$codecs$Lamdera$Wire3$decodeResult$);
+var $lamdera$codecs$Lamdera$Wire3$succeedDecode = $elm$bytes$Bytes$Decode$succeed;
+var $author$project$TestTypes$w3_decode_ApiResponse = $lamdera$codecs$Lamdera$Wire3$andMapDecode$(
+	$lamdera$codecs$Lamdera$Wire3$decodeResult$($lamdera$codecs$Lamdera$Wire3$decodeString, $lamdera$codecs$Lamdera$Wire3$decodeInt),
+	$lamdera$codecs$Lamdera$Wire3$andMapDecode$(
+		$lamdera$codecs$Lamdera$Wire3$decodeString,
+		$lamdera$codecs$Lamdera$Wire3$succeedDecode(
+			F2(
+				function (message0, result0) {
+					return {message: message0, result: result0};
+				}))));
+var $lamdera$codecs$Lamdera$Wire3$andThenDecode = $elm$bytes$Bytes$Decode$andThen;
+var $author$project$TestTypes$w3_decode_Color = A2(
+	$lamdera$codecs$Lamdera$Wire3$andThenDecode,
+	function (w3v) {
+		switch (w3v) {
+			case 0:
+				return $lamdera$codecs$Lamdera$Wire3$succeedDecode($author$project$TestTypes$Blue);
+			case 1:
+				return $lamdera$codecs$Lamdera$Wire3$succeedDecode($author$project$TestTypes$Green);
+			case 2:
+				return $lamdera$codecs$Lamdera$Wire3$succeedDecode($author$project$TestTypes$Red);
+			default:
+				return $lamdera$codecs$Lamdera$Wire3$failDecode;
+		}
+	},
+	$elm$bytes$Bytes$Decode$unsignedInt8);
+var $lamdera$codecs$Lamdera$Wire3$decodeFloat = $lamdera$codecs$Lamdera$Wire3$decodeFloat64;
+var $lamdera$codecs$Lamdera$Wire3$decodePair$ = function (c_a, c_b) {
+	return $lamdera$codecs$Lamdera$Wire3$andMapDecode$(
+		c_b,
+		$lamdera$codecs$Lamdera$Wire3$andMapDecode$(
+			c_a,
+			$elm$bytes$Bytes$Decode$succeed(
+				F2(
+					function (a, b) {
+						return _Utils_Tuple2(a, b);
+					}))));
+};
+var $lamdera$codecs$Lamdera$Wire3$decodePair = F2($lamdera$codecs$Lamdera$Wire3$decodePair$);
+var $author$project$TestTypes$w3_decode_Coordinate = $lamdera$codecs$Lamdera$Wire3$andMapDecode$(
+	$lamdera$codecs$Lamdera$Wire3$decodePair$($lamdera$codecs$Lamdera$Wire3$decodeFloat, $lamdera$codecs$Lamdera$Wire3$decodeFloat),
+	$lamdera$codecs$Lamdera$Wire3$andMapDecode$(
+		$lamdera$codecs$Lamdera$Wire3$decodeString,
+		$lamdera$codecs$Lamdera$Wire3$succeedDecode(
+			F2(
+				function (label0, point0) {
+					return {label: label0, point: point0};
+				}))));
+var $lamdera$codecs$Lamdera$Wire3$decodeList = function (decoder) {
+	var listStep = function (_v0) {
+		var n = _v0.a;
+		var xs = _v0.b;
+		return (n <= 0) ? $elm$bytes$Bytes$Decode$succeed(
+			$elm$bytes$Bytes$Decode$Done(xs)) : $elm$bytes$Bytes$Decode$map$(
+			function (x) {
+				return $elm$bytes$Bytes$Decode$Loop(
+					_Utils_Tuple2(
+						n - 1,
+						A2($elm$core$List$cons, x, xs)));
+			},
+			decoder);
+	};
+	return $elm$bytes$Bytes$Decode$andThen$(
+		function (len) {
+			return $elm$bytes$Bytes$Decode$map$(
+				$elm$core$List$reverse,
+				$elm$bytes$Bytes$Decode$loop$(
+					_Utils_Tuple2(len, _List_Nil),
+					listStep));
+		},
+		$lamdera$codecs$Lamdera$Wire3$decodeInt64);
+};
+var $lamdera$codecs$Lamdera$Wire3$decodeDict$ = function (decKey, decValue) {
+	return $elm$bytes$Bytes$Decode$map$(
+		$elm$core$Dict$fromList,
+		$lamdera$codecs$Lamdera$Wire3$decodeList(
+			$lamdera$codecs$Lamdera$Wire3$decodePair$(decKey, decValue)));
+};
+var $lamdera$codecs$Lamdera$Wire3$decodeDict = F2($lamdera$codecs$Lamdera$Wire3$decodeDict$);
+var $lamdera$codecs$Lamdera$Wire3$decodeMaybe = function (decVal) {
+	return $elm$bytes$Bytes$Decode$andThen$(
+		function (c) {
+			switch (c) {
+				case 0:
+					return $lamdera$codecs$Lamdera$Wire3$succeedDecode($elm$core$Maybe$Nothing);
+				case 1:
+					return $elm$bytes$Bytes$Decode$map$($elm$core$Maybe$Just, decVal);
+				default:
+					return $lamdera$codecs$Lamdera$Wire3$failDecode;
+			}
+		},
+		$elm$bytes$Bytes$Decode$unsignedInt8);
+};
+var $author$project$TestTypes$w3_decode_Dashboard = $lamdera$codecs$Lamdera$Wire3$andMapDecode$(
+	$lamdera$codecs$Lamdera$Wire3$decodeDict$(
+		$lamdera$codecs$Lamdera$Wire3$decodeString,
+		$lamdera$codecs$Lamdera$Wire3$decodeList($lamdera$codecs$Lamdera$Wire3$decodeInt)),
+	$lamdera$codecs$Lamdera$Wire3$andMapDecode$(
+		$lamdera$codecs$Lamdera$Wire3$decodeMaybe(
+			$lamdera$codecs$Lamdera$Wire3$decodeList($lamdera$codecs$Lamdera$Wire3$decodeString)),
+		$lamdera$codecs$Lamdera$Wire3$andMapDecode$(
+			$lamdera$codecs$Lamdera$Wire3$decodeResult$(
+				$lamdera$codecs$Lamdera$Wire3$decodeString,
+				$lamdera$codecs$Lamdera$Wire3$decodeMaybe($lamdera$codecs$Lamdera$Wire3$decodeInt)),
+			$lamdera$codecs$Lamdera$Wire3$succeedDecode(
+				F3(
+					function (nested0, optionalData0, userScores0) {
+						return {nested: nested0, optionalData: optionalData0, userScores: userScores0};
+					})))));
+var $lamdera$codecs$Lamdera$Wire3$decodeSet = function (decVal) {
+	return $elm$bytes$Bytes$Decode$map$(
+		$elm$core$Set$fromList,
+		$lamdera$codecs$Lamdera$Wire3$decodeList(decVal));
+};
+var $author$project$TestTypes$w3_decode_Inventory = $lamdera$codecs$Lamdera$Wire3$andMapDecode$(
+	$lamdera$codecs$Lamdera$Wire3$decodeSet($lamdera$codecs$Lamdera$Wire3$decodeString),
+	$lamdera$codecs$Lamdera$Wire3$andMapDecode$(
+		$lamdera$codecs$Lamdera$Wire3$decodeMaybe($lamdera$codecs$Lamdera$Wire3$decodeString),
+		$lamdera$codecs$Lamdera$Wire3$andMapDecode$(
+			$lamdera$codecs$Lamdera$Wire3$decodeList($lamdera$codecs$Lamdera$Wire3$decodeString),
+			$lamdera$codecs$Lamdera$Wire3$andMapDecode$(
+				$lamdera$codecs$Lamdera$Wire3$decodeDict$($lamdera$codecs$Lamdera$Wire3$decodeString, $lamdera$codecs$Lamdera$Wire3$decodeInt),
+				$lamdera$codecs$Lamdera$Wire3$succeedDecode(
+					F4(
+						function (counts0, items0, selected0, tags0) {
+							return {counts: counts0, items: items0, selected: selected0, tags: tags0};
+						}))))));
+var $author$project$TestTypes$w3_decode_Person = $lamdera$codecs$Lamdera$Wire3$andMapDecode$(
+	$lamdera$codecs$Lamdera$Wire3$decodeFloat,
+	$lamdera$codecs$Lamdera$Wire3$andMapDecode$(
+		$lamdera$codecs$Lamdera$Wire3$decodeString,
+		$lamdera$codecs$Lamdera$Wire3$andMapDecode$(
+			$lamdera$codecs$Lamdera$Wire3$decodeInt,
+			$lamdera$codecs$Lamdera$Wire3$andMapDecode$(
+				$lamdera$codecs$Lamdera$Wire3$decodeBool,
+				$lamdera$codecs$Lamdera$Wire3$succeedDecode(
+					F4(
+						function (active0, age0, name0, score0) {
+							return {active: active0, age: age0, name: name0, score: score0};
+						}))))));
+var $author$project$TestTypes$w3_decode_Shape = A2(
+	$lamdera$codecs$Lamdera$Wire3$andThenDecode,
+	function (w3v) {
+		switch (w3v) {
+			case 0:
+				return $lamdera$codecs$Lamdera$Wire3$andMapDecode$(
+					$lamdera$codecs$Lamdera$Wire3$decodeFloat,
+					$lamdera$codecs$Lamdera$Wire3$succeedDecode($author$project$TestTypes$Circle));
+			case 1:
+				return $lamdera$codecs$Lamdera$Wire3$succeedDecode($author$project$TestTypes$Point);
+			case 2:
+				return $lamdera$codecs$Lamdera$Wire3$andMapDecode$(
+					$lamdera$codecs$Lamdera$Wire3$decodeFloat,
+					$lamdera$codecs$Lamdera$Wire3$andMapDecode$(
+						$lamdera$codecs$Lamdera$Wire3$decodeFloat,
+						$lamdera$codecs$Lamdera$Wire3$succeedDecode($author$project$TestTypes$Rectangle)));
+			default:
+				return $lamdera$codecs$Lamdera$Wire3$failDecode;
+		}
+	},
+	$elm$bytes$Bytes$Decode$unsignedInt8);
+var $author$project$TestTypes$w3_decode_Team = $lamdera$codecs$Lamdera$Wire3$andMapDecode$(
+	$lamdera$codecs$Lamdera$Wire3$decodeList($author$project$TestTypes$w3_decode_Person),
+	$lamdera$codecs$Lamdera$Wire3$andMapDecode$(
+		$author$project$TestTypes$w3_decode_Person,
+		$lamdera$codecs$Lamdera$Wire3$andMapDecode$(
+			$author$project$TestTypes$w3_decode_Color,
+			$lamdera$codecs$Lamdera$Wire3$succeedDecode(
+				F3(
+					function (color0, leader0, members0) {
+						return {color: color0, leader: leader0, members: members0};
+					})))));
+function $author$project$TestTypes$cyclic$w3_decode_Tree() {
+	return A2(
+		$lamdera$codecs$Lamdera$Wire3$andThenDecode,
+		function (w3v) {
+			switch (w3v) {
+				case 0:
+					return $lamdera$codecs$Lamdera$Wire3$andMapDecode$(
+						$author$project$TestTypes$cyclic$w3_decode_Tree(),
+						$lamdera$codecs$Lamdera$Wire3$andMapDecode$(
+							$author$project$TestTypes$cyclic$w3_decode_Tree(),
+							$lamdera$codecs$Lamdera$Wire3$succeedDecode($author$project$TestTypes$Branch)));
+				case 1:
+					return $lamdera$codecs$Lamdera$Wire3$andMapDecode$(
+						$lamdera$codecs$Lamdera$Wire3$decodeInt,
+						$lamdera$codecs$Lamdera$Wire3$succeedDecode($author$project$TestTypes$Leaf));
+				default:
+					return $lamdera$codecs$Lamdera$Wire3$failDecode;
+			}
+		},
+		$elm$bytes$Bytes$Decode$unsignedInt8);
+}
+try {
+	var $author$project$TestTypes$w3_decode_Tree = $author$project$TestTypes$cyclic$w3_decode_Tree();
+	$author$project$TestTypes$cyclic$w3_decode_Tree = function () {
+		return $author$project$TestTypes$w3_decode_Tree;
+	};
+} catch ($) {
+	throw 'Some top-level definitions from `TestTypes` are causing infinite recursion:\n\n  ┌─────┐\n  │    w3_decode_Tree\n  └─────┘\n\nThese errors are very tricky, so read https://elm-lang.org/0.19.1/bad-recursion to learn how to fix it!';}
 var $author$project$Harness$handleType$ = function (typeName, bytes) {
 	switch (typeName) {
 		case 'Person':
@@ -4234,11 +4502,19 @@ var $elm$core$String$words = _String_words;
 var $author$project$Harness$processRequest = function (line) {
 	var _v0 = $elm$core$String$words(line);
 	if (_v0.b && _v0.b.b) {
-		var typeName = _v0.a;
-		var _v1 = _v0.b;
-		var hexStr = _v1.a;
-		var bytes = $author$project$Harness$hexToBytes(hexStr);
-		return $author$project$Harness$handleType$(typeName, bytes);
+		if ((_v0.a === 'ENCODE') && _v0.b.b.b) {
+			var _v1 = _v0.b;
+			var typeName = _v1.a;
+			var _v2 = _v1.b;
+			var caseId = _v2.a;
+			return $author$project$Harness$handleEncode$(typeName, caseId);
+		} else {
+			var typeName = _v0.a;
+			var _v3 = _v0.b;
+			var hexStr = _v3.a;
+			var bytes = $author$project$Harness$hexToBytes(hexStr);
+			return $author$project$Harness$handleType$(typeName, bytes);
+		}
 	} else {
 		return 'ERR invalid-request-format';
 	}
