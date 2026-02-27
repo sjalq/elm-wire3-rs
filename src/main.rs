@@ -1,12 +1,8 @@
-#![allow(dead_code)]
-
-mod codegen;
-mod parser;
-mod types;
-pub mod wire3;
-
 use clap::Parser;
 use std::path::PathBuf;
+
+use elm_wire3_rs::codegen;
+use elm_wire3_rs::parser;
 
 #[derive(Parser)]
 #[command(name = "elm-wire3-rs")]
