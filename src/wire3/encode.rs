@@ -127,6 +127,18 @@ impl Wire3Encoder {
         }
     }
 
+    /// Encode a Set String, sorted by Elm's string ordering (UTF-16 code units).
+    /// Elm (via JavaScript) compares strings by UTF-16 code units, which differs
+    /// from Rust's UTF-8 byte ordering for characters >= U+10000.
+    pub fn encode_string_set(&mut self, items: &ElmSet<String>) {
+        let mut sorted: Vec<&String> = items.iter().collect();
+        sorted.sort_by(|a, b| elm_str_cmp(a, b));
+        self.encode_int_raw(sorted.len() as i64);
+        for s in sorted {
+            self.encode_string(s);
+        }
+    }
+
     /// Encode a dict: [varint count][k0,v0][k1,v1]...
     /// BTreeMap iterates in sorted key order, matching Elm's Dict.toList.
     pub fn encode_dict<K: Ord, V>(
@@ -138,6 +150,21 @@ impl Wire3Encoder {
         self.encode_int_raw(items.len() as i64);
         for (k, v) in items {
             encode_key(self, k);
+            encode_val(self, v);
+        }
+    }
+
+    /// Encode a Dict with String keys, sorted by Elm's string ordering (UTF-16 code units).
+    pub fn encode_string_key_dict<V>(
+        &mut self,
+        items: &ElmDict<String, V>,
+        encode_val: impl Fn(&mut Self, &V),
+    ) {
+        let mut sorted: Vec<(&String, &V)> = items.iter().collect();
+        sorted.sort_by(|a, b| elm_str_cmp(a.0, b.0));
+        self.encode_int_raw(sorted.len() as i64);
+        for (k, v) in sorted {
+            self.encode_string(k);
             encode_val(self, v);
         }
     }
@@ -247,6 +274,18 @@ impl Default for Wire3Encoder {
     fn default() -> Self {
         Self::new()
     }
+}
+
+/// Compare two strings using Elm's ordering (UTF-16 code unit lexicographic order).
+///
+/// Elm runs on JavaScript, where string comparison uses UTF-16 code units.
+/// Rust's native string ordering uses UTF-8 bytes, which is equivalent to
+/// Unicode code point order. These two orderings diverge for characters
+/// >= U+10000 (emoji, CJK extensions, etc.) because UTF-16 encodes them as
+/// surrogate pairs (0xD800-0xDBFF lead + 0xDC00-0xDFFF trail) which sort
+/// lower than BMP characters in the 0xE000-0xFFFF range.
+pub fn elm_str_cmp(a: &str, b: &str) -> std::cmp::Ordering {
+    a.encode_utf16().cmp(b.encode_utf16())
 }
 
 /// Zigzag encode: map signed → unsigned.

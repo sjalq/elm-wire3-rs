@@ -7,7 +7,7 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::io::{BufRead, BufReader, Write};
 use std::process::{Command, Stdio};
 
-use elm_wire3_rs::wire3::encode::Wire3Encoder;
+use elm_wire3_rs::wire3::encode::{Wire3Encoder, elm_str_cmp};
 use elm_wire3_rs::wire3::types::*;
 
 use proptest::prelude::*;
@@ -193,18 +193,6 @@ fn short_string_strategy() -> impl Strategy<Value = String> {
     ]
 }
 
-/// ASCII-only strings for Set/Dict keys.
-/// Elm's Set/Dict sort by UTF-16 code unit order (JS comparison), while
-/// Rust's BTreeSet/BTreeMap sort by UTF-8 byte order. These diverge for
-/// strings containing characters ≥ U+10000 (emoji, CJK extensions, etc.)
-/// because UTF-16 surrogate pairs sort lower than high BMP characters.
-/// ASCII strings have identical ordering in both encodings.
-fn ascii_string_strategy() -> impl Strategy<Value = String> {
-    prop_oneof![
-        "[a-zA-Z0-9_]{0,30}",
-        Just(String::new()),
-    ]
-}
 
 // ── Fuzz tests ───────────────────────────────────────────────────
 
@@ -350,30 +338,30 @@ fn fuzz_inventory() {
     let set_lens = generate_values(0usize..4, FUZZ_CASES);
     let use_just = generate_values(any::<bool>(), FUZZ_CASES);
     let strings = generate_values(short_string_strategy(), FUZZ_CASES * 10);
-    // ASCII-only for Set/Dict keys (Elm sorts by UTF-16 code units, Rust by UTF-8 bytes)
-    let key_strings = generate_values(ascii_string_strategy(), FUZZ_CASES * 10);
     let ints = generate_values(elm_int_strategy(), FUZZ_CASES * 5);
     let mut si = 0;
-    let mut ki = 0;
     let mut ii = 0;
 
     for i in 0..FUZZ_CASES {
         let mut enc = Wire3Encoder::new();
 
-        // counts: Dict String Int (keys must be sorted for BTreeMap match)
+        // counts: Dict String Int — sorted by Elm's UTF-16 code unit ordering
         let dict_len = dict_lens[i];
         let mut dict: BTreeMap<String, i64> = BTreeMap::new();
         for _ in 0..dict_len {
-            let k = key_strings[ki % key_strings.len()].clone();
-            ki += 1;
+            let k = strings[si % strings.len()].clone();
+            si += 1;
             let v = ints[ii % ints.len()];
             ii += 1;
             dict.insert(k, v);
         }
-        enc.encode_int_raw(dict.len() as i64);
-        for (k, v) in &dict {
+        // Re-sort by Elm's string ordering (UTF-16 code units)
+        let mut dict_sorted: Vec<(&String, &i64)> = dict.iter().collect();
+        dict_sorted.sort_by(|a, b| elm_str_cmp(a.0, b.0));
+        enc.encode_int_raw(dict_sorted.len() as i64);
+        for (k, v) in &dict_sorted {
             enc.encode_string(k);
-            enc.encode_int(&ElmInt::new(*v).unwrap());
+            enc.encode_int(&ElmInt::new(**v).unwrap());
         }
 
         // items: List String
@@ -393,15 +381,18 @@ fn fuzz_inventory() {
             enc.encode_tag8(0); // Nothing
         }
 
-        // tags: Set String (must be sorted — using ASCII-only for ordering compat)
+        // tags: Set String — sorted by Elm's UTF-16 code unit ordering
         let set_len = set_lens[i];
         let mut set: BTreeSet<String> = BTreeSet::new();
         for _ in 0..set_len {
-            set.insert(key_strings[ki % key_strings.len()].clone());
-            ki += 1;
+            set.insert(strings[si % strings.len()].clone());
+            si += 1;
         }
-        enc.encode_int_raw(set.len() as i64);
-        for s in &set {
+        // Re-sort by Elm's string ordering (UTF-16 code units)
+        let mut set_sorted: Vec<&String> = set.iter().collect();
+        set_sorted.sort_by(|a, b| elm_str_cmp(a, b));
+        enc.encode_int_raw(set_sorted.len() as i64);
+        for s in &set_sorted {
             enc.encode_string(s);
         }
 
@@ -506,12 +497,10 @@ fn fuzz_dashboard() {
     //            userScores(Dict String (List Int)) — alphabetical
 
     let strings = generate_values(short_string_strategy(), FUZZ_CASES * 10);
-    let key_strings = generate_values(ascii_string_strategy(), FUZZ_CASES * 10);
     let ints = generate_values(elm_int_strategy(), FUZZ_CASES * 10);
     let bools = generate_values(any::<bool>(), FUZZ_CASES * 5);
     let small_lens = generate_values(0usize..4, FUZZ_CASES * 5);
     let mut si = 0;
-    let mut ki = 0;
     let mut ii = 0;
     let mut bi = 0;
     let mut li = 0;
@@ -555,13 +544,13 @@ fn fuzz_dashboard() {
             enc.encode_tag8(0); // Nothing
         }
 
-        // userScores: Dict String (List Int) — ASCII keys for ordering compat
+        // userScores: Dict String (List Int) — sorted by Elm's UTF-16 code unit ordering
         let dict_len = small_lens[li % small_lens.len()];
         li += 1;
         let mut dict: BTreeMap<String, Vec<i64>> = BTreeMap::new();
         for _ in 0..dict_len {
-            let k = key_strings[ki % key_strings.len()].clone();
-            ki += 1;
+            let k = strings[si % strings.len()].clone();
+            si += 1;
             let vlen = small_lens[li % small_lens.len()];
             li += 1;
             let mut vals = Vec::new();
@@ -571,11 +560,14 @@ fn fuzz_dashboard() {
             }
             dict.insert(k, vals);
         }
-        enc.encode_int_raw(dict.len() as i64);
-        for (k, vals) in &dict {
+        // Re-sort by Elm's string ordering (UTF-16 code units)
+        let mut dict_sorted: Vec<(&String, &Vec<i64>)> = dict.iter().collect();
+        dict_sorted.sort_by(|a, b| elm_str_cmp(a.0, b.0));
+        enc.encode_int_raw(dict_sorted.len() as i64);
+        for (k, vals) in &dict_sorted {
             enc.encode_string(k);
             enc.encode_int_raw(vals.len() as i64);
-            for v in vals {
+            for v in *vals {
                 enc.encode_int(&ElmInt::new(*v).unwrap());
             }
         }

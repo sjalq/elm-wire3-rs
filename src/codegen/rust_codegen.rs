@@ -528,15 +528,26 @@ fn generate_encode_expr(elm_type: &ElmType, value_expr: &str) -> Result<String, 
                 Ok(format!("enc.encode_list(&{value_expr}, {elem_enc})"))
             }
             (_, "Set") if args.len() == 1 => {
-                let elem_enc = generate_encode_closure(&args[0])?;
-                Ok(format!("enc.encode_set(&{value_expr}, {elem_enc})"))
+                if is_string_type(&args[0]) {
+                    Ok(format!("enc.encode_string_set(&{value_expr})"))
+                } else {
+                    let elem_enc = generate_encode_closure(&args[0])?;
+                    Ok(format!("enc.encode_set(&{value_expr}, {elem_enc})"))
+                }
             }
             (_, "Dict") if args.len() == 2 => {
-                let key_enc = generate_encode_closure(&args[0])?;
-                let val_enc = generate_encode_closure(&args[1])?;
-                Ok(format!(
-                    "enc.encode_dict(&{value_expr}, {key_enc}, {val_enc})"
-                ))
+                if is_string_type(&args[0]) {
+                    let val_enc = generate_encode_closure(&args[1])?;
+                    Ok(format!(
+                        "enc.encode_string_key_dict(&{value_expr}, {val_enc})"
+                    ))
+                } else {
+                    let key_enc = generate_encode_closure(&args[0])?;
+                    let val_enc = generate_encode_closure(&args[1])?;
+                    Ok(format!(
+                        "enc.encode_dict(&{value_expr}, {key_enc}, {val_enc})"
+                    ))
+                }
             }
             (_, "Maybe") if args.len() == 1 => {
                 let inner_enc = generate_encode_closure(&args[0])?;
@@ -627,13 +638,22 @@ fn generate_encode_closure(elm_type: &ElmType) -> Result<String, String> {
                 Ok(format!("|enc, v| enc.encode_maybe(v, {inner})"))
             }
             (_, "Dict") if args.len() == 2 => {
-                let key = generate_encode_closure(&args[0])?;
-                let val = generate_encode_closure(&args[1])?;
-                Ok(format!("|enc, v| enc.encode_dict(v, {key}, {val})"))
+                if is_string_type(&args[0]) {
+                    let val = generate_encode_closure(&args[1])?;
+                    Ok(format!("|enc, v| enc.encode_string_key_dict(v, {val})"))
+                } else {
+                    let key = generate_encode_closure(&args[0])?;
+                    let val = generate_encode_closure(&args[1])?;
+                    Ok(format!("|enc, v| enc.encode_dict(v, {key}, {val})"))
+                }
             }
             (_, "Set") if args.len() == 1 => {
-                let inner = generate_encode_closure(&args[0])?;
-                Ok(format!("|enc, v| enc.encode_set(v, {inner})"))
+                if is_string_type(&args[0]) {
+                    Ok("|enc, v| enc.encode_string_set(v)".to_string())
+                } else {
+                    let inner = generate_encode_closure(&args[0])?;
+                    Ok(format!("|enc, v| enc.encode_set(v, {inner})"))
+                }
             }
             (_, "Result") if args.len() == 2 => {
                 let err = generate_encode_closure(&args[0])?;
@@ -878,6 +898,11 @@ fn derives_for_union(union: &UnionType) -> String {
     } else {
         "#[derive(Debug, Clone, PartialEq, Eq, Hash)]".to_string()
     }
+}
+
+/// Check if an Elm type is String (used to select Elm-ordered encoding for Set/Dict).
+fn is_string_type(elm_type: &ElmType) -> bool {
+    matches!(elm_type, ElmType::Named { name, .. } if name == "String")
 }
 
 /// Sanitize Elm field names that are Rust keywords.
