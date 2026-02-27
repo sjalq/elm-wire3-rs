@@ -1,0 +1,15 @@
+[package]
+name = "elm-wire3-rs"
+version = "0.1.0"
+edition = "2024"
+description = "Generate Rust types and Wire3 codecs from Elm type definitions"
+
+[dependencies]
+tree-sitter = "0.25"
+tree-sitter-elm = "5.9"
+clap = { version = "4", features = ["derive"] }
+thiserror = "2"
+
+[dev-dependencies]
+proptest = "1"
+rand = "0.9"
