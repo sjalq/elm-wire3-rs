@@ -366,6 +366,12 @@ impl<T: Wire3Encode> Wire3Encode for Option<T> {
     }
 }
 
+impl<T: Wire3Encode, E: Wire3Encode> Wire3Encode for Result<T, E> {
+    fn wire3_encode(&self, encoder: &mut Wire3Encoder) {
+        encoder.encode_result(self, |enc, e| e.wire3_encode(enc), |enc, v| v.wire3_encode(enc));
+    }
+}
+
 impl<A: Wire3Encode, B: Wire3Encode> Wire3Encode for (A, B) {
     fn wire3_encode(&self, encoder: &mut Wire3Encoder) {
         self.0.wire3_encode(encoder);

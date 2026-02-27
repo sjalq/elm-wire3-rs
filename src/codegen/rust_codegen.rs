@@ -1,9 +1,13 @@
 use crate::types::*;
+use std::collections::HashSet;
 use std::fmt::Write;
 
 /// Generate a complete Rust module from parsed Elm type definitions.
 pub fn generate_rust_module(module: &ElmModule) -> Result<String, String> {
     let mut out = String::new();
+
+    // Pre-compute which types transitively contain Float (for derive decisions).
+    let float_types = compute_float_types(&module.types);
 
     writeln!(out, "// Auto-generated from Elm module: {}", module.module_name).unwrap();
     writeln!(out, "// Do not edit manually — regenerate from the Elm source.").unwrap();
@@ -32,16 +36,72 @@ pub fn generate_rust_module(module: &ElmModule) -> Result<String, String> {
 
         match type_def {
             ElmTypeDef::Alias(alias) => {
-                generate_alias(&mut out, alias)?;
+                generate_alias(&mut out, alias, &float_types)?;
             }
             ElmTypeDef::Union(union) => {
-                generate_union(&mut out, union)?;
+                generate_union(&mut out, union, &float_types)?;
             }
         }
         writeln!(out).unwrap();
     }
 
     Ok(out)
+}
+
+/// Compute the set of type names that transitively contain Float.
+/// Uses fixed-point iteration: starts with {"Float"}, then repeatedly marks
+/// any type whose body/constructors reference a known float-containing type.
+fn compute_float_types(types: &[ElmTypeDef]) -> HashSet<String> {
+    let mut float_names: HashSet<String> = HashSet::new();
+    float_names.insert("Float".to_string());
+
+    loop {
+        let mut changed = false;
+        for td in types {
+            let name = td.name().to_string();
+            if float_names.contains(&name) {
+                continue;
+            }
+
+            let contains = match td {
+                ElmTypeDef::Alias(a) => type_references_float(&a.body, &float_names),
+                ElmTypeDef::Union(u) => u
+                    .constructors
+                    .iter()
+                    .any(|c| c.params.iter().any(|p| type_references_float(p, &float_names))),
+            };
+
+            if contains {
+                float_names.insert(name);
+                changed = true;
+            }
+        }
+        if !changed {
+            break;
+        }
+    }
+
+    float_names
+}
+
+/// Check if a type expression references any type in the given set.
+fn type_references_float(t: &ElmType, float_names: &HashSet<String>) -> bool {
+    match t {
+        ElmType::Named { name, args, .. } => {
+            float_names.contains(name.as_str())
+                || args.iter().any(|a| type_references_float(a, float_names))
+        }
+        ElmType::Tuple(elems) => elems.iter().any(|e| type_references_float(e, float_names)),
+        ElmType::Record(fields) => fields
+            .iter()
+            .any(|f| type_references_float(&f.type_, float_names)),
+        ElmType::ExtensibleRecord { fields, .. } => fields
+            .iter()
+            .any(|f| type_references_float(&f.type_, float_names)),
+        // Type variables: derive macros add bounds automatically, so Eq/Hash
+        // will only be required when the concrete type supports them.
+        ElmType::Var(_) | ElmType::Unit | ElmType::Function(_, _) => false,
+    }
 }
 
 fn type_def_contains_function(td: &ElmTypeDef) -> bool {
@@ -56,9 +116,13 @@ fn type_def_contains_function(td: &ElmTypeDef) -> bool {
 
 // ── Type alias codegen ──────────────────────────────────────────
 
-fn generate_alias(out: &mut String, alias: &TypeAlias) -> Result<(), String> {
+fn generate_alias(
+    out: &mut String,
+    alias: &TypeAlias,
+    float_types: &HashSet<String>,
+) -> Result<(), String> {
     let generics = generic_params(&alias.type_vars);
-    let derives = derives_for_type(&alias.body);
+    let derives = derives_for_type(&alias.body, float_types);
 
     match &alias.body {
         ElmType::Record(fields) => {
@@ -96,14 +160,18 @@ fn generate_alias(out: &mut String, alias: &TypeAlias) -> Result<(), String> {
 
 // ── Union type codegen ──────────────────────────────────────────
 
-fn generate_union(out: &mut String, union: &UnionType) -> Result<(), String> {
+fn generate_union(
+    out: &mut String,
+    union: &UnionType,
+    float_types: &HashSet<String>,
+) -> Result<(), String> {
     let generics = generic_params(&union.type_vars);
 
     // Sort constructors alphabetically (Wire3 assigns tags in alpha order)
     let mut sorted_ctors: Vec<&Constructor> = union.constructors.iter().collect();
     sorted_ctors.sort_by_key(|c| &c.name);
 
-    let derives = derives_for_union(union);
+    let derives = derives_for_union(union, float_types);
     writeln!(out, "{derives}").unwrap();
     writeln!(out, "pub enum {}{generics} {{", union.name).unwrap();
     for ctor in &sorted_ctors {
@@ -502,7 +570,14 @@ fn generate_encode_expr(elm_type: &ElmType, value_expr: &str) -> Result<String, 
                 Ok(format!("enc.encode_float(&{value_expr})"))
             }
             (_, "Bool") => {
-                Ok(format!("enc.encode_bool({value_expr})"))
+                // encode_bool takes bool by value. In constructor pattern matches
+                // (value_expr = "v0"), the binding is &bool due to match ergonomics.
+                // Field access ("self.field") gives bool directly via auto-deref.
+                if value_expr.contains('.') {
+                    Ok(format!("enc.encode_bool({value_expr})"))
+                } else {
+                    Ok(format!("enc.encode_bool(*{value_expr})"))
+                }
             }
             (_, "Char") => {
                 Ok(format!("enc.encode_char(&{value_expr})"))
@@ -511,7 +586,12 @@ fn generate_encode_expr(elm_type: &ElmType, value_expr: &str) -> Result<String, 
                 Ok(format!("enc.encode_string(&{value_expr})"))
             }
             (_, "Order") => {
-                Ok(format!("enc.encode_order({value_expr})"))
+                // Same by-value issue as Bool.
+                if value_expr.contains('.') {
+                    Ok(format!("enc.encode_order({value_expr})"))
+                } else {
+                    Ok(format!("enc.encode_order(*{value_expr})"))
+                }
             }
             (_, "Bytes") => {
                 Ok(format!("enc.encode_bytes(&{value_expr})"))
@@ -880,18 +960,29 @@ fn wire3_where_clause(type_vars: &[String]) -> String {
     }
 }
 
-fn derives_for_type(body: &ElmType) -> String {
-    // Records always get Debug + Clone at minimum
+fn derives_for_type(body: &ElmType, float_types: &HashSet<String>) -> String {
     match body {
-        ElmType::Record(_) => "#[derive(Debug, Clone, PartialEq)]".to_string(),
+        ElmType::Record(fields) => {
+            let has_float = fields
+                .iter()
+                .any(|f| type_references_float(&f.type_, float_types));
+            if has_float {
+                "#[derive(Debug, Clone, PartialEq)]".to_string()
+            } else {
+                "#[derive(Debug, Clone, PartialEq, Eq, Hash)]".to_string()
+            }
+        }
         _ => String::new(),
     }
 }
 
-fn derives_for_union(union: &UnionType) -> String {
-    // Check if all constructors have no params or simple params
+fn derives_for_union(union: &UnionType, float_types: &HashSet<String>) -> String {
+    // Deep check: any constructor param that transitively contains Float
+    // means we can't derive Eq/Hash (since ElmFloat doesn't implement them).
     let has_float = union.constructors.iter().any(|c| {
-        c.params.iter().any(|p| matches!(p, ElmType::Named { name, .. } if name == "Float"))
+        c.params
+            .iter()
+            .any(|p| type_references_float(p, float_types))
     });
     if has_float {
         "#[derive(Debug, Clone, PartialEq)]".to_string()

@@ -358,6 +358,12 @@ impl<T: Wire3Decode> Wire3Decode for Option<T> {
     }
 }
 
+impl<T: Wire3Decode, E: Wire3Decode> Wire3Decode for Result<T, E> {
+    fn wire3_decode(decoder: &mut Wire3Decoder) -> Result<Self, Wire3DecodeError> {
+        decoder.decode_result(E::wire3_decode, T::wire3_decode)
+    }
+}
+
 impl<A: Wire3Decode, B: Wire3Decode> Wire3Decode for (A, B) {
     fn wire3_decode(decoder: &mut Wire3Decoder) -> Result<Self, Wire3DecodeError> {
         decoder.decode_pair(A::wire3_decode, B::wire3_decode)
