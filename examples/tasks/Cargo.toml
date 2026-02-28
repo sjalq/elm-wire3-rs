@@ -1,0 +1,11 @@
+[package]
+name = "wire3-tasks-example"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[dependencies]
+elm-wire3-rs = { path = "../.." }
+axum = { version = "0.8", features = ["ws"] }
+tokio = { version = "1", features = ["full"] }
+tower-http = { version = "0.6", features = ["fs"] }

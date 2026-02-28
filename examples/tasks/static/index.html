@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wire3 Task Manager</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #0a0e14; }
+    </style>
+</head>
+<body>
+    <div id="app"></div>
+    <script src="/elm.js"></script>
+    <script src="/elm-pkg-js/wire3-ws.js"></script>
+    <script>
+        var proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+        var app = Elm.Main.init({
+            node: document.getElementById('app'),
+            flags: { wsUrl: proto + '//' + location.host + '/ws' }
+        });
+        // Init all elm-pkg-js modules
+        var modules = window.elmPkgJs || {};
+        Object.keys(modules).forEach(function(name) {
+            try { modules[name].init(app); } catch(e) {
+                console.error('elm-pkg-js [' + name + ']: init failed', e);
+            }
+        });
+    </script>
+</body>
+</html>

@@ -2,7 +2,11 @@
 name = "elm-wire3-rs"
 version = "0.1.0"
 edition = "2024"
-description = "Generate Rust types and Wire3 codecs from Elm type definitions"
+description = "Wire3 binary codec for Rust, matching Lamdera's Wire3.elm format. Parse Elm types, generate Rust structs with encode/decode, communicate over WebSocket."
+license = "MIT"
+repository = "https://github.com/sjalq/elm-wire3-rs"
+keywords = ["elm", "lamdera", "wire3", "codec", "websocket"]
+categories = ["encoding", "web-programming"]
 
 [dependencies]
 tree-sitter = "0.25"

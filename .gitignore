@@ -1,1 +1,5 @@
 /target
+/examples/*/target
+/examples/*/static/elm.js
+/examples/*/static/elm-pkg-js/
+/examples/*/elm/elm-stuff/

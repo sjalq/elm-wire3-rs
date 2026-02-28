@@ -187,6 +187,12 @@ pub enum Wire3DecodeError {
     #[error("invalid UTF-8 in string")]
     InvalidUtf8,
 
+    #[error("invalid hex encoding: {reason}")]
+    InvalidHex { reason: &'static str },
+
+    #[error("trailing bytes: {remaining} bytes unconsumed")]
+    TrailingBytes { remaining: usize },
+
     #[error("Elm type error: {0}")]
     ElmType(#[from] ElmTypeError),
 
